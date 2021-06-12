@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import com.google.android.gms.common.GooglePlayServicesUtil;
+
 import processing.android.CompatUtils;
 import processing.android.PFragment;
 import processing.core.PApplet;
@@ -37,9 +39,8 @@ public class MainActivity extends AppCompatActivity {
         PFragment fragment = new PFragment(sketch);
         fragment.setView(frame, this);
         //setContentView(R.layout.activity_main);
-
-
     }
+
 
     @Override
     protected void onNewIntent(Intent intent) {

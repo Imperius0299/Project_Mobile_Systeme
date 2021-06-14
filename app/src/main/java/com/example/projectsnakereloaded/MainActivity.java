@@ -1,52 +1,71 @@
 package com.example.projectsnakereloaded;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
+import android.util.Log;
+import android.view.View;
 
-import com.google.android.gms.common.GooglePlayServicesUtil;
-
-import processing.android.CompatUtils;
-import processing.android.PFragment;
-import processing.core.PApplet;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 
 public class MainActivity extends AppCompatActivity {
 
-    private PApplet sketch;
+    private GoogleSignInClient signInClient;
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (sketch != null) {
-            sketch.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
+    private static final int RC_SIGN_IN = 9001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        FrameLayout frame = new FrameLayout(this);
-        frame.setId(CompatUtils.getUniqueViewId());
-        setContentView(frame, new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
+        setContentView(R.layout.activity_main);
 
-        sketch = new Sketch();
-        PFragment fragment = new PFragment(sketch);
-        fragment.setView(frame, this);
-        //setContentView(R.layout.activity_main);
+        signInClient = GoogleSignIn.getClient(this,
+                new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN).build());
+
     }
 
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        if (sketch != null) {
-            sketch.onNewIntent(intent);
+    public void buttonPressed(View view) {
+        switch (view.getId()) {
+            case R.id.buttonPlay:
+                Intent playIntent = new Intent(this, GameActivity.class);
+                startActivity(playIntent);
+                break;
+            case R.id.buttonGoogle:
+                startActivityForResult(signInClient.getSignInIntent(), RC_SIGN_IN);
+                break;
         }
     }
+
+    public void click(View view) {
+        System.out.println("test123");
+    }
+
+    //public void signIn (View view)
+
+    private boolean isSignedIn() {
+        return GoogleSignIn.getLastSignedInAccount(this) != null;
+    }
+
+    private void signOut() {
+
+        if (!isSignedIn()) {
+            return;
+        }
+
+        signInClient.signOut().addOnCompleteListener(this,
+                new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(Task<Void> task) {
+                        boolean successful = task.isSuccessful();
+                        Log.d("TAG","signOut(): " + (successful ? "success" : "failed"));
+                    }
+                });
+    }
+
+
 }

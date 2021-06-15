@@ -11,13 +11,15 @@ public class Snake extends PApplet {
     private int xDir;
     private int yDir;
     private int len;
+    private PApplet pApplet;
 
-    public Snake(int height, int width) {
+    public Snake(int width, int height, PApplet pApplet) {
         body = new ArrayList();
-        body.add(new PVector(floor(height/2), floor(width/2)));
+        body.add(new PVector(floor(width/2) , floor(height/2)));
         xDir = 0;
         yDir = 0;
         len = 0;
+        this.pApplet = pApplet;
     }
 
     public void setDir(int x, int y) {
@@ -25,8 +27,8 @@ public class Snake extends PApplet {
         yDir = y;
     }
 
-    public void move() {
-        PVector head = body.get(body.size()-1);
+    public void move(int speed) {
+        PVector head = body.get(body.size()-1).copy();
         body.remove(0);
         head.x += xDir;
         head.y += yDir;
@@ -51,13 +53,17 @@ public class Snake extends PApplet {
 
     public void show() {
         for (int i = 0; i< body.size(); i++) {
-            fill(20);
-            noStroke();
-            rect(body.get(i).x, body.get(i).y, 1, 1);
+            pApplet.fill(0, 255, 0);
+           // noStroke();
+            pApplet.rect(body.get(i).x, body.get(i).y, 1, 1);
         }
     }
 
     public PVector getHeadVect() {
         return body.get(body.size()-1);
+    }
+
+    public int getLen() {
+        return len;
     }
 }

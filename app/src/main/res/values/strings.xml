@@ -3,4 +3,7 @@
 
     <string name="buttonPlay">PLay</string>
     <string name="buttonGoogle">Google Sign-In</string>
+    <string name="buttonGoogleSignOut">Google Sign-Out</string>
+
+    <string name="signInError">There was an Error on Sign in. Please try again later.</string>
 </resources>

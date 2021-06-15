@@ -1,5 +1,6 @@
 package com.example.projectsnakereloaded;
 
+import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 
 import androidx.core.view.GestureDetectorCompat;
@@ -7,6 +8,8 @@ import androidx.core.view.GestureDetectorCompat;
 import java.util.ArrayList;
 
 import processing.core.PApplet;
+import processing.core.PFont;
+import processing.core.PVector;
 
 public class Sketch extends PApplet {
 
@@ -14,33 +17,123 @@ public class Sketch extends PApplet {
     int w = 30, h = 45, blocks = 35, direction = 2, foodx = 15, foody = 15, speed = 8, fc1 = 255, fc2 = 255, fc3 = 255;
     int[] x_direction = {0, 0, 1, -1}, y_direction = {1, -1, 0, 0}; //direction for x and y
     boolean gameover = false;
+    Snake snake;
+    PVector food;
+    float rez;
+    int size;
 
 
     @Override
     public void settings() {
-        super.settings();
+
+        fullScreen();
     }
 
     @Override
     public void setup() {
-        super.setup();
-        x.add(0); //snake start position
-        y.add(15);
+        //super.setup();
+        //x.add(0); //snake start position
+        //y.add(15);
+        rez = 20;
+        size = 35;
+        frameRate(5);
+        snake = new Snake(floor(width/rez) , floor(height/rez), this);
+        createFood();
+        System.out.println(height * displayDensity + "llss" + width * displayDensity);
+
+
+        PFont font = createFont("SansSerif", 24 * displayDensity);
+        textFont(font);
+        textAlign(CENTER, CENTER);
     }
 
+    public void createFood() {
+        food = new PVector((int) random(width/rez), (int) random(height/rez));
+    }
+
+    public void endGame() {
+        if (snake.getHeadVect().x < 0 || snake.getHeadVect().x + size > width ||snake.getHeadVect().y < 0 || snake.getHeadVect().y + size > height){
+            gameover = true;
+        }
+    }
 
     @Override
     public void draw() {
         background(197, 167, 225);
-
+        scale(rez);
+        //rect(width/2,height/2,20 * displayDensity,20 * displayDensity);
+        //text("Hello", width/2, height/2);
         fill(197, 167, 225);
         rect(0, 0, 1077, 250);
-        rect(0, 250, 250, 1620);
-        rect(830, 250, 250, 1620);
+        rect(0, 250, 250, 1200);
+        rect(830, 250, 250, 1200);
         rect(0, 1570, 1077, 250);
 
 
-        fill(0, 255, 0); //snake color green
+        //createFood();
+        if (!gameover) {
+            snake.move((int) rez);
+            snake.show();
+
+
+
+            if (snake.eat(food)) {
+                createFood();
+            }
+
+            fill(255, 0, 0);
+            rect(food.x, food.y, 1, 1);
+
+            endGame();
+        }else {
+            fill(200, 200, 0);
+            textSize(24 * displayDensity);
+            textAlign(CENTER, CENTER);
+            text("GAME OVER! \n Your Score is: " + snake.getLen() + ". \n Click to restart!", width / 2, height / 3);
+            if (mousePressed) {
+                gameover = false;
+            }
+        }
+
+
+        if (mousePressed) {
+            if (mouseY <= 250) {
+                if(snake.getLen() == 1) {
+                    //System.out.println("test");
+                    snake.setDir(0, -1);
+                }
+                else{
+                    //System.out.println("test");
+                    snake.setDir(0, -1);
+                }
+            }
+            else if (mouseY > 250 && mouseY <= 1620 && mouseX <= 250) {
+                if(snake.getLen() == 1) {
+                    direction = 3; //LEFT
+                }
+                else{
+                    snake.setDir(-1, 0);
+                }
+            }
+            else if (mouseY > 250 && mouseY <= 1200 && mouseX >= 830) {
+                if(snake.getLen() == 1) {
+                    direction = 2; //LEFT
+                }
+                else{
+                    snake.setDir(1, 0);
+                }
+            }
+            else if (mouseY >= 1200) {
+                if(snake.getLen() == 1) {
+                    direction = 0; //LEFT
+                }
+                else{
+                    snake.setDir(0, 1);
+                }
+            }
+        }
+
+      /*  fill(0, 255, 0); //snake color green
         for (int i = 0; i < x.size(); i++)
             rect(x.get(i) * blocks, y.get(i) * blocks, blocks, blocks); //snake
         if (!gameover) {
@@ -119,6 +212,6 @@ public class Sketch extends PApplet {
                     direction = 0; //LEFT
                 }
             }
-        }
+        } */
     }
 }

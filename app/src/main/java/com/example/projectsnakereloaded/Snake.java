@@ -15,7 +15,7 @@ public class Snake extends PApplet {
 
     public Snake(int width, int height, PApplet pApplet) {
         body = new ArrayList();
-        body.add(new PVector(floor(width/2) , floor(height/2)));
+        body.add(new PVector(width / 2 , height / 2));
         xDir = 0;
         yDir = 0;
         len = 0;
@@ -54,7 +54,8 @@ public class Snake extends PApplet {
     public void show() {
         for (int i = 0; i< body.size(); i++) {
             pApplet.fill(0, 255, 0);
-           // noStroke();
+            pApplet.noStroke();
+            //pApplet.rectMode(CENTER);
             pApplet.rect(body.get(i).x, body.get(i).y, 1, 1);
         }
     }
@@ -65,5 +66,9 @@ public class Snake extends PApplet {
 
     public int getLen() {
         return len;
+    }
+
+    public ArrayList<PVector> getBody() {
+        return body;
     }
 }

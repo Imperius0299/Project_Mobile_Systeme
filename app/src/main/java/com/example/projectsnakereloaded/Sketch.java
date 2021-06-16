@@ -1,5 +1,6 @@
 package com.example.projectsnakereloaded;
 
+import android.media.Image;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 
@@ -9,19 +10,21 @@ import java.util.ArrayList;
 
 import processing.core.PApplet;
 import processing.core.PFont;
+import processing.core.PImage;
 import processing.core.PVector;
 
 public class Sketch extends PApplet {
 
-    ArrayList<Integer> x = new ArrayList<Integer>(), y = new ArrayList<Integer>();
-    int w = 30, h = 45, blocks = 35, direction = 2, foodx = 15, foody = 15, speed = 8, fc1 = 255, fc2 = 255, fc3 = 255;
-    int[] x_direction = {0, 0, 1, -1}, y_direction = {1, -1, 0, 0}; //direction for x and y
-    boolean gameover = false;
-    Snake snake;
-    PVector food;
-    float rez;
-    int size;
+    private boolean gameover = false;
+    private Snake snake;
+    private PVector food;
 
+    private float rez;
+    private int w;
+    private int h;
+
+    PImage testImage;
+    PImage img;
 
     @Override
     public void settings() {
@@ -31,15 +34,24 @@ public class Sketch extends PApplet {
 
     @Override
     public void setup() {
-        //super.setup();
-        //x.add(0); //snake start position
-        //y.add(15);
-        rez = 20;
-        size = 35;
+        // Quelle für png https://github.com/rembound/Snake-Game-HTML5
+        String url = "https://raw.githubusercontent.com/rembound/Snake-Game-HTML5/master/snake-graphics.png";
+        testImage = loadImage(url, "png");
+        //image(testImage, 0, 0, 320, 320, 0, 0 ,64 ,64);
+        //createImage()
+
+        rez = 60;
+        w = floor(width / rez);
+        h = floor(height / rez);
         frameRate(5);
-        snake = new Snake(floor(width/rez) , floor(height/rez), this);
+
+        snake = new Snake(w , h, this);
         createFood();
+
+        //Zum Prüfen des Grids
         System.out.println(height * displayDensity + "llss" + width * displayDensity);
+        System.out.println(snake.getHeadVect().x + "," + snake.getHeadVect().y);
+        System.out.println(w + "," + h);
 
 
         PFont font = createFont("SansSerif", 24 * displayDensity);
@@ -48,12 +60,45 @@ public class Sketch extends PApplet {
     }
 
     public void createFood() {
-        food = new PVector((int) random(width/rez), (int) random(height/rez));
+        food = new PVector((int) random(w), (int) random(h));
     }
 
     public void endGame() {
-        if (snake.getHeadVect().x < 0 || snake.getHeadVect().x + size > width ||snake.getHeadVect().y < 0 || snake.getHeadVect().y + size > height){
+        PVector snakeHead = snake.getHeadVect();
+        ArrayList<PVector> snakeBody = snake.getBody();
+        if (snakeHead.x < 0 || snakeHead.x > w - 1 || snakeHead.y < 0 || snakeHead.y > h - 1){
             gameover = true;
+        }
+        /*for (PVector bodyPart : snake.getBody()) {
+            if (bodyPart.x == snakeHead.x && bodyPart.y == snakeHead.y && !bodyPart.equals(snakeHead)) {
+                gameover = true;
+            }
+        }*/
+        for (int i=0; i< snake.getBody().size() -1; i++){
+            if (snakeHead.x == snakeBody.get(i).x && snakeHead.y == snakeBody.get(i).y
+                    && !snakeHead.equals(snakeBody.get(i))){
+                gameover = true;
+            }
+        }
+    }
+
+    @Override
+    public void keyPressed() {
+        if (key == CODED) {
+            switch (keyCode) {
+                case UP:
+                    snake.setDir(0, -1);
+                    break;
+                case DOWN:
+                    snake.setDir(0, 1);
+                    break;
+                case LEFT:
+                    snake.setDir(-1, 0);
+                    break;
+                case RIGHT:
+                    snake.setDir(1, 0);
+                    break;
+            }
         }
     }
 
@@ -63,69 +108,73 @@ public class Sketch extends PApplet {
         scale(rez);
         //rect(width/2,height/2,20 * displayDensity,20 * displayDensity);
         //text("Hello", width/2, height/2);
-        fill(197, 167, 225);
+       /* fill(197, 167, 225);
         rect(0, 0, 1077, 250);
         rect(0, 250, 250, 1200);
         rect(830, 250, 250, 1200);
-        rect(0, 1570, 1077, 250);
-
+        rect(0, 1570, 1077, 250); */
 
         //createFood();
         if (!gameover) {
+
+            if (snake.eat(food)) {
+                createFood();
+            }
             snake.move((int) rez);
             snake.show();
 
 
 
-            if (snake.eat(food)) {
-                createFood();
-            }
+
+
 
             fill(255, 0, 0);
+            noStroke();
             rect(food.x, food.y, 1, 1);
 
             endGame();
         }else {
             fill(200, 200, 0);
-            textSize(24 * displayDensity);
+            textSize(24/rez * displayDensity);
             textAlign(CENTER, CENTER);
-            text("GAME OVER! \n Your Score is: " + snake.getLen() + ". \n Click to restart!", width / 2, height / 3);
+            text("GAME OVER! \n Your Score is: " + snake.getLen() + ". \n Click to restart!", w / 2, h / 3);
             if (mousePressed) {
                 gameover = false;
+                setup();
             }
         }
 
 
         if (mousePressed) {
-            if (mouseY <= 250) {
+            if (mouseY <= 250 || keyCode == UP) {
                 if(snake.getLen() == 1) {
                     //System.out.println("test");
-                    snake.setDir(0, -1);
+                    //snake.setDir(0, -1);
                 }
                 else{
                     //System.out.println("test");
                     snake.setDir(0, -1);
                 }
             }
-            else if (mouseY > 250 && mouseY <= 1620 && mouseX <= 250) {
+            else if ((mouseY > 250 && mouseY <= 1620 && mouseX <= 250) || keyCode == LEFT) {
                 if(snake.getLen() == 1) {
-                    direction = 3; //LEFT
+                    //direction = 3; //LEFT
                 }
                 else{
                     snake.setDir(-1, 0);
                 }
             }
-            else if (mouseY > 250 && mouseY <= 1200 && mouseX >= 830) {
+            else if ((mouseY > 250 && mouseY <= 1200 && mouseX >= 830) || keyCode == RIGHT) {
                 if(snake.getLen() == 1) {
-                    direction = 2; //LEFT
+                    //direction = 2; //Right
                 }
                 else{
                     snake.setDir(1, 0);
                 }
             }
-            else if (mouseY >= 1200) {
+            else if ((mouseY >= 1200) || keyCode == DOWN) {
                 if(snake.getLen() == 1) {
-                    direction = 0; //LEFT
+                    //direction = 0; //Down
                 }
                 else{
                     snake.setDir(0, 1);

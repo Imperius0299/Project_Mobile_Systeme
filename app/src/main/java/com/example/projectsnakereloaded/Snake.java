@@ -30,6 +30,7 @@ public class Snake extends PApplet {
     public void move(int speed) {
         PVector head = body.get(body.size()-1).copy();
         body.remove(0);
+        body.trimToSize();
         head.x += xDir;
         head.y += yDir;
         body.add(head);
@@ -70,5 +71,13 @@ public class Snake extends PApplet {
 
     public ArrayList<PVector> getBody() {
         return body;
+    }
+
+    public int getxDir() {
+        return xDir;
+    }
+
+    public int getyDir() {
+        return yDir;
     }
 }

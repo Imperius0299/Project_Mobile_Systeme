@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -136,7 +137,8 @@ public class MainActivity extends AppCompatActivity {
                         String displayName;
                         if (task.isSuccessful()) {
                             displayName = task.getResult().getDisplayName();
-                            System.out.println(displayName);
+                            String welcomeText = "Welcome:" + displayName;
+                            Toast.makeText(getApplicationContext(), welcomeText, Toast.LENGTH_LONG).show();
                         } else {
                             Exception e = task.getException();
                             displayName = "???";

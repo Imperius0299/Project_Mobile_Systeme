@@ -75,11 +75,30 @@ public class Sketch extends PApplet {
             }
         }*/
         for (int i=0; i< snake.getBody().size() -1; i++){
-            if (snakeHead.x == snakeBody.get(i).x && snakeHead.y == snakeBody.get(i).y
-                    && !snakeHead.equals(snakeBody.get(i))){
+            if (snakeHead.x == snakeBody.get(i).x && snakeHead.y == snakeBody.get(i).y){
                 gameover = true;
             }
         }
+    }
+
+    @Override
+    public void mousePressed() {
+        super.mousePressed();
+    }
+
+    @Override
+    public void touchStarted() {
+        super.touchStarted();
+    }
+
+    @Override
+    public void touchMoved() {
+        super.touchMoved();
+    }
+
+    @Override
+    public void touchEnded() {
+        super.touchEnded();
     }
 
     @Override
@@ -87,15 +106,27 @@ public class Sketch extends PApplet {
         if (key == CODED) {
             switch (keyCode) {
                 case UP:
+                    if (snake.getBody().size() > 1 && snake.getyDir() == 1){
+                        break;
+                    }
                     snake.setDir(0, -1);
                     break;
                 case DOWN:
+                    if (snake.getBody().size() > 1 && snake.getyDir() == -1){
+                        break;
+                    }
                     snake.setDir(0, 1);
                     break;
                 case LEFT:
+                    if (snake.getBody().size() > 1 && snake.getxDir() == 1){
+                        break;
+                    }
                     snake.setDir(-1, 0);
                     break;
                 case RIGHT:
+                    if (snake.getBody().size() > 1 && snake.getxDir() == -1){
+                        break;
+                    }
                     snake.setDir(1, 0);
                     break;
             }
@@ -113,6 +144,16 @@ public class Sketch extends PApplet {
         rect(0, 250, 250, 1200);
         rect(830, 250, 250, 1200);
         rect(0, 1570, 1077, 250); */
+        PVector pV1 = new PVector(0,0);
+        PVector pV2 = new PVector(w, h);
+        PVector pV3 = new PVector(0, h);
+        PVector pV4 = new PVector(w, 0);
+
+        pV1.dist(pV2);
+        System.out.println(pV1.dist(pV2));
+        fill(255);
+        line(0,0, w, h);
+        line(w, 0, 0, h);
 
         //createFood();
         if (!gameover) {

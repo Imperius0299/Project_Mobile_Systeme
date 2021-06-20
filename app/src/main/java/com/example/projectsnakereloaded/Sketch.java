@@ -18,6 +18,7 @@ public class Sketch extends PApplet {
     private boolean gameover = false;
     private Snake snake;
     private PVector food;
+    private ArrayList<Obstacle> obstaclaList;
 
     private float rez;
     private int w;
@@ -35,8 +36,8 @@ public class Sketch extends PApplet {
     @Override
     public void setup() {
         // Quelle für png https://github.com/rembound/Snake-Game-HTML5
-        String url = "https://raw.githubusercontent.com/rembound/Snake-Game-HTML5/master/snake-graphics.png";
-        testImage = loadImage(url, "png");
+        //String url = "https://raw.githubusercontent.com/rembound/Snake-Game-HTML5/master/snake-graphics.png";
+        //testImage = loadImage(url, "png");
         //image(testImage, 0, 0, 320, 320, 0, 0 ,64 ,64);
         //createImage()
 
@@ -45,7 +46,8 @@ public class Sketch extends PApplet {
         h = floor(height / rez);
         frameRate(5);
 
-        snake = new Snake(w , h, this);
+        snake = new Snake(w , h);
+        obstaclaList = new ArrayList<>();
         createFood();
 
         //Zum Prüfen des Grids
@@ -69,6 +71,11 @@ public class Sketch extends PApplet {
         if (snakeHead.x < 0 || snakeHead.x > w - 1 || snakeHead.y < 0 || snakeHead.y > h - 1){
             gameover = true;
         }
+        for (Obstacle obstacle : obstaclaList) {
+            if (snakeHead.x == obstacle.getPos().x && snakeHead.y == obstacle.getPos().y) {
+                gameover = true;
+            }
+        }
         /*for (PVector bodyPart : snake.getBody()) {
             if (bodyPart.x == snakeHead.x && bodyPart.y == snakeHead.y && !bodyPart.equals(snakeHead)) {
                 gameover = true;
@@ -81,9 +88,61 @@ public class Sketch extends PApplet {
         }
     }
 
+    private float calcCircumference(float a, float b, float c) {
+        return (a + b + c) / 2;
+    }
+
+    private float[] getEdges(PVector v1, PVector v2, PVector v3) {
+        float a = v1.dist(v2);
+        float b = v2.dist(v3);
+        float c = v1.dist(v3);
+
+        float[] edges = {a, b, c};
+        return edges;
+    }
+
+    // Berechne die Fläche eines beliebigen Dreiecks
+    private float heronsFormula(float s, float a, float b, float c) {
+        return sqrt(s * (s - a) * (s - b) * (s - c));
+    }
+
+    private float calcSquareTriangle(PVector p0, PVector p1, PVector p2) {
+        float[] edges = getEdges(p0, p1, p2);
+        float a = edges[0];
+        float b = edges[1];
+        float c = edges[2];
+
+        float s = calcCircumference(a, b, c);
+
+        return heronsFormula(s, a, b, c);
+    }
+
     @Override
     public void mousePressed() {
-        super.mousePressed();
+        PVector snakeHead = snake.getHeadVect();
+        PVector dir = snake.getDir();
+
+        float mouseXRez = mouseX / rez;
+        float mouseYRez = mouseY / rez;
+
+        // Koordinaten / Punkte der vier Ecken
+        PVector p0 = new PVector(0,0);
+        PVector p1 = new PVector(w, 0);
+
+
+        PVector p2 = new PVector(0, h);
+        PVector p3 = new PVector(w, h);
+        // Koordinaten des Mittelpunktes
+        PVector pM = new PVector(w/2, h/2);
+
+
+        //Triangle 1 full (Top/ Bottom)
+        float a1 = calcSquareTriangle(p0, p1, pM);
+
+        //Triangle 2 full (Left/Right)
+        float a2 = calcSquareTriangle(p0, p2, pM);
+
+
     }
 
     @Override
@@ -106,25 +165,25 @@ public class Sketch extends PApplet {
         if (key == CODED) {
             switch (keyCode) {
                 case UP:
-                    if (snake.getBody().size() > 1 && snake.getyDir() == 1){
+                    if (snake.getBody().size() > 1 && snake.getDir().y == 1){
                         break;
                     }
                     snake.setDir(0, -1);
                     break;
                 case DOWN:
-                    if (snake.getBody().size() > 1 && snake.getyDir() == -1){
+                    if (snake.getBody().size() > 1 && snake.getDir().y == -1){
                         break;
                     }
                     snake.setDir(0, 1);
                     break;
                 case LEFT:
-                    if (snake.getBody().size() > 1 && snake.getxDir() == 1){
+                    if (snake.getBody().size() > 1 && snake.getDir().x == 1){
                         break;
                     }
                     snake.setDir(-1, 0);
                     break;
                 case RIGHT:
-                    if (snake.getBody().size() > 1 && snake.getxDir() == -1){
+                    if (snake.getBody().size() > 1 && snake.getDir().x == -1){
                         break;
                     }
                     snake.setDir(1, 0);
@@ -162,10 +221,16 @@ public class Sketch extends PApplet {
                 createFood();
             }
             snake.move((int) rez);
-            snake.show();
+            snake.show(this);
 
 
+            if (frameCount % 30 == 0){
+                obstaclaList.add(new Obstacle((int) random(w), (int) random(h)));
+            }
 
+            for (Obstacle obstacle : obstaclaList) {
+                obstacle.show(this);
+            }
 
 
 
@@ -175,12 +240,14 @@ public class Sketch extends PApplet {
 
             endGame();
         }else {
+            //looping = !looping;
             fill(200, 200, 0);
             textSize(24/rez * displayDensity);
             textAlign(CENTER, CENTER);
             text("GAME OVER! \n Your Score is: " + snake.getLen() + ". \n Click to restart!", w / 2, h / 3);
             if (mousePressed) {
                 gameover = false;
+                //looping = !looping;
                 setup();
             }
         }

@@ -5,34 +5,30 @@ import java.util.ArrayList;
 import processing.core.PApplet;
 import processing.core.PVector;
 
-public class Snake extends PApplet {
+public class Snake {
 
     private ArrayList<PVector> body;
-    private int xDir;
-    private int yDir;
+    private PVector dir;
     private int len;
-    private PApplet pApplet;
 
-    public Snake(int width, int height, PApplet pApplet) {
+    public Snake(int width, int height) {
         body = new ArrayList();
         body.add(new PVector(width / 2 , height / 2));
-        xDir = 0;
-        yDir = 0;
+        dir = new PVector(0,0);
         len = 0;
-        this.pApplet = pApplet;
     }
 
     public void setDir(int x, int y) {
-        xDir = x;
-        yDir = y;
+        dir.x = x;
+        dir.y = y;
     }
 
     public void move(int speed) {
         PVector head = body.get(body.size()-1).copy();
         body.remove(0);
         body.trimToSize();
-        head.x += xDir;
-        head.y += yDir;
+        head.x += dir.x;
+        head.y += dir.y;
         body.add(head);
     }
 
@@ -52,7 +48,7 @@ public class Snake extends PApplet {
         return false;
     }
 
-    public void show() {
+    public void show(PApplet pApplet) {
         for (int i = 0; i< body.size(); i++) {
             pApplet.fill(0, 255, 0);
             pApplet.noStroke();
@@ -73,11 +69,7 @@ public class Snake extends PApplet {
         return body;
     }
 
-    public int getxDir() {
-        return xDir;
-    }
-
-    public int getyDir() {
-        return yDir;
+    public PVector getDir() {
+        return dir;
     }
 }

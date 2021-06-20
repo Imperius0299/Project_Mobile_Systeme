@@ -5,6 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:onClick="buttonPressed"
+    android:background="@drawable/background"
+    android:scaleType="centerCrop"
     tools:context=".MainActivity">
 
 
@@ -13,19 +15,95 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <Button
-            android:id="@+id/buttonPlay"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="buttonPressed"
-            android:text="@string/buttonPlay" />
+            android:orientation="horizontal">
+
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageButton
+                    android:id="@+id/imageButton2"
+                    android:layout_width="55dp"
+                    android:layout_height="55dp"
+                    android:layout_margin="8dp"
+                    android:background="@null"
+                    android:scaleType="centerCrop"
+                    app:srcCompat="@drawable/play_games_logo" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="right">
+
+                <ImageButton
+                    android:id="@+id/imageButton3"
+                    android:layout_width="55dp"
+                    android:layout_height="55dp"
+                    android:layout_margin="8dp"
+                    android:background="@null"
+                    android:scaleType="centerCrop"
+                    app:srcCompat="@drawable/settings_icon" />
+            </TableRow>
+        </LinearLayout>
 
         <com.google.android.gms.common.SignInButton
             android:id="@+id/buttonGoogleReal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="right"
             android:onClick="click" />
 
+        <ImageButton
+            android:id="@+id/imageButton"
+            android:layout_width="match_parent"
+            android:layout_height="85dp"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginVertical="5dp"
+            android:background="@null"
+            android:scaleType="centerInside"
+            app:srcCompat="@drawable/achievements_button" />
+
+        <ImageButton
+            android:id="@+id/imageButton4"
+            android:layout_width="match_parent"
+            android:layout_height="85dp"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginVertical="5dp"
+            android:background="@null"
+            android:scaleType="centerInside"
+            app:srcCompat="@drawable/leader_button" />
+
+        <ImageButton
+            android:id="@+id/imageButton5"
+            android:layout_width="match_parent"
+            android:layout_height="85dp"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginVertical="5dp"
+            android:background="@null"
+            android:scaleType="centerInside"
+            app:srcCompat="@drawable/stats_button" />
+
+        <ImageButton
+            android:id="@+id/imageButton6"
+            android:layout_width="match_parent"
+            android:layout_height="85dp"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginVertical="5dp"
+            android:background="@null"
+            android:scaleType="centerInside"
+            app:srcCompat="@drawable/play_button" />
+
+        <Button
+            android:id="@+id/buttonPlay"
+            android:layout_width="match_parent"
+            android:layout_height="67dp"
+            android:background="@drawable/play_button"
+            android:onClick="buttonPressed"
+            android:text="Play" />
 
 
         <Button

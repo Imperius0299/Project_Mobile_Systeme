@@ -6,6 +6,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -24,9 +25,12 @@ import com.google.android.gms.games.LeaderboardsClient;
 import com.google.android.gms.games.Player;
 import com.google.android.gms.games.PlayersClient;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements
+        Sketch.Callback {
 
     private GoogleSignInClient signInClient;
 
@@ -34,14 +38,22 @@ public class MainActivity extends AppCompatActivity {
     private LeaderboardsClient leaderboardsClient;
     private PlayersClient playersClient;
 
+    private static final int RC_UNUSED = 5001;
     private static final int RC_SIGN_IN = 9001;
 
+    private static final String TAG = "Snake";
+
     private SignInButton signInButton;
+
+    private final AccomplishmentsOutbox outbox = new AccomplishmentsOutbox();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
         signInButton = findViewById(R.id.buttonGoogleReal);
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,6 +92,31 @@ public class MainActivity extends AppCompatActivity {
         return GoogleSignIn.getLastSignedInAccount(this) != null;
     }
 
+    private void signInSilently() {
+        Log.d(TAG, "signedInSilently()");
+
+        signInClient.silentSignIn().addOnCompleteListener(this,
+                new OnCompleteListener<GoogleSignInAccount>() {
+                    @Override
+                    public void onComplete(Task<GoogleSignInAccount> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "signInSilently(): success");
+                            onConnected(task.getResult());
+                        } else {
+                            Log.d(TAG, "signInSilently(): failure", task.getException());
+                            onDisconnected();
+                        }
+                    }
+                });
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume()");
+
+        signInSilently();
+    }
+
     private void signOut() {
 
         if (!isSignedIn()) {
@@ -94,6 +131,57 @@ public class MainActivity extends AppCompatActivity {
                         Log.d("TAG","signOut(): " + (successful ? "success" : "failed"));
                     }
                 });
+    }
+
+    public void onShowAchievementsRequested() {
+        achievementsClient.getAchievementsIntent()
+                .addOnSuccessListener(new OnSuccessListener<Intent>() {
+                    @Override
+                    public void onSuccess(Intent intent) {
+                        startActivityForResult(intent, RC_UNUSED);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.d(TAG, e.getMessage());
+                    }
+                });
+    }
+
+    public void onShowLeaderboardsRequested() {
+        leaderboardsClient.getAllLeaderboardsIntent()
+                .addOnSuccessListener(new OnSuccessListener<Intent>() {
+                    @Override
+                    public void onSuccess(Intent intent) {
+                        startActivityForResult(intent, RC_UNUSED);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.d(TAG, e.getMessage());
+                    }
+                });
+    }
+
+    public void pushAccomplishments() {
+        if (!isSignedIn()) {
+            return;
+        }
+
+        if (outbox.easyModeScore >= 0) {
+            leaderboardsClient.submitScore(getString(R.string.leaderboard_easy_id),
+            outbox.easyModeScore);
+            outbox.easyModeScore = -1;
+        }
+    }
+
+
+    private void updateLeaderboard(int finalScore) {
+        if (outbox.easyModeScore < finalScore) {
+            outbox.easyModeScore = finalScore;
+        }
     }
 
     @Override
@@ -146,6 +234,11 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
+        if (!outbox.isEmpty()) {
+            pushAccomplishments();
+            Toast.makeText(this, "Your progress will be uploades", Toast.LENGTH_LONG).show();
+        }
+
     }
 
     private void onDisconnected() {
@@ -154,5 +247,20 @@ public class MainActivity extends AppCompatActivity {
         achievementsClient = null;
         leaderboardsClient = null;
         playersClient = null;
+    }
+
+    @Override
+    public void onEndedGameScore(int score) {
+
+        updateLeaderboard(score);
+    }
+
+    private class AccomplishmentsOutbox {
+        int easyModeScore = -1;
+        int hardModeScore = -1;
+
+        boolean isEmpty() {
+            return easyModeScore < 0 && hardModeScore < 0;
+        }
     }
 }

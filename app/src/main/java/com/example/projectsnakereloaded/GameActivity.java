@@ -36,6 +36,7 @@ public class GameActivity extends AppCompatActivity {
         PFragment fragment = new PFragment(sketch);
         fragment.setView(frame, this);
         //setContentView(R.layout.activity_main);
+
     }
 
     @Override

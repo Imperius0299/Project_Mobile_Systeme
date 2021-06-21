@@ -1,6 +1,7 @@
 package com.example.projectsnakereloaded;
 
 import android.media.Image;
+import android.telecom.Call;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 
@@ -24,6 +25,14 @@ public class Sketch extends PApplet {
     private int w;
     private int h;
 
+    private int finalScore;
+
+    interface Callback {
+        void onEndedGameScore(int score);
+    }
+
+    private Callback callback = null;
+
     PImage testImage;
     PImage img;
 
@@ -31,6 +40,12 @@ public class Sketch extends PApplet {
     public void settings() {
 
         fullScreen();
+    }
+
+
+
+    public void setCallback(Callback callback) {
+        this.callback = callback;
     }
 
     @Override
@@ -241,10 +256,12 @@ public class Sketch extends PApplet {
             endGame();
         }else {
             //looping = !looping;
+            finalScore = snake.getLen();
+            callback.onEndedGameScore(finalScore);
             fill(200, 200, 0);
             textSize(24/rez * displayDensity);
             textAlign(CENTER, CENTER);
-            text("GAME OVER! \n Your Score is: " + snake.getLen() + ". \n Click to restart!", w / 2, h / 3);
+            text("GAME OVER! \n Your Score is: " + finalScore + ". \n Click to restart!", w / 2, h / 3);
             if (mousePressed) {
                 gameover = false;
                 //looping = !looping;

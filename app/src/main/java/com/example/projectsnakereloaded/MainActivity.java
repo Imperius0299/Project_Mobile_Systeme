@@ -39,6 +39,8 @@ public class MainActivity extends AppCompatActivity implements
 
     private GoogleSignInClient signInClient;
 
+    private ImageButton buttonLeaderboard;
+
     private AchievementsClient achievementsClient;
     private LeaderboardsClient leaderboardsClient;
     private PlayersClient playersClient;
@@ -121,6 +123,17 @@ public class MainActivity extends AppCompatActivity implements
         signInClient = GoogleSignIn.getClient(this,
                 new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN).build());
 
+        buttonLeaderboard = (ImageButton) findViewById(R.id.buttonLeaderboard);
+
+        buttonLeaderboard.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onShowLeaderboardsRequested(): success");
+
+                onShowLeaderboardsRequested();
+            }
+        });
+
     }
 
     public void buttonPressed(View view) {
@@ -137,7 +150,15 @@ public class MainActivity extends AppCompatActivity implements
                 signOut();
                 break;
              */
+            case R.id.buttonLeaderboard:
+                System.out.println("Test12334");
+                onShowLeaderboardsRequested();
+                break;
         }
+    }
+
+    public void getLeaderboardClient() {
+        System.out.println(leaderboardsClient);
     }
 
     public void click(View view) {

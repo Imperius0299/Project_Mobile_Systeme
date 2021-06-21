@@ -1,5 +1,6 @@
 package com.example.projectsnakereloaded;
 
+import android.app.Activity;
 import android.media.Image;
 import android.telecom.Call;
 import android.util.DisplayMetrics;
@@ -48,11 +49,12 @@ public class Sketch extends PApplet {
         this.callback = callback;
     }
 
+
     @Override
     public void setup() {
         // Quelle für png https://github.com/rembound/Snake-Game-HTML5
-        //String url = "https://raw.githubusercontent.com/rembound/Snake-Game-HTML5/master/snake-graphics.png";
-        //testImage = loadImage(url, "png");
+        String url = "https://raw.githubusercontent.com/rembound/Snake-Game-HTML5/master/snake-graphics.png";
+        testImage = loadImage(url, "png");
         //image(testImage, 0, 0, 320, 320, 0, 0 ,64 ,64);
         //createImage()
 
@@ -208,6 +210,11 @@ public class Sketch extends PApplet {
     }
 
     @Override
+    public Activity getActivity() {
+        return super.getActivity();
+    }
+
+    @Override
     public void draw() {
         background(197, 167, 225);
         scale(rez);
@@ -239,7 +246,7 @@ public class Sketch extends PApplet {
             snake.show(this);
 
 
-            if (frameCount % 30 == 0){
+            if (frameCount % 30 == 0 && (snake.getDir().x != 0 || snake.getDir().y != 0)){
                 obstaclaList.add(new Obstacle((int) random(w), (int) random(h)));
             }
 
@@ -247,7 +254,7 @@ public class Sketch extends PApplet {
                 obstacle.show(this);
             }
 
-
+            image(testImage, 0,0 , 1, 1);
 
             fill(255, 0, 0);
             noStroke();
@@ -257,7 +264,8 @@ public class Sketch extends PApplet {
         }else {
             //looping = !looping;
             finalScore = snake.getLen();
-            callback.onEndedGameScore(finalScore);
+            //callback.onEndedGameScore(finalScore);
+            ((GameActivity)getActivity()).testMethod();
             fill(200, 200, 0);
             textSize(24/rez * displayDensity);
             textAlign(CENTER, CENTER);

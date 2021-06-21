@@ -17,6 +17,8 @@ public class GameActivity extends AppCompatActivity {
 
     private PApplet sketch;
 
+    int x;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,6 +41,14 @@ public class GameActivity extends AppCompatActivity {
 
     }
 
+    public void testMethod() {
+        System.out.println("test123");
+        x = 2;
+    }
+
+    public void getX () {
+        System.out.println(x);
+    }
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (sketch != null) {
@@ -53,5 +63,17 @@ public class GameActivity extends AppCompatActivity {
         if (sketch != null) {
             sketch.onNewIntent(intent);
         }
+    }
+
+    @Override
+    protected void onPause() {
+        //System.out.println("test");
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        //System.out.println("test");
+        super.onResume();
     }
 }

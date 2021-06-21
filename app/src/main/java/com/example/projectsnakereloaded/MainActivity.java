@@ -5,11 +5,16 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.nfc.Tag;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -38,12 +43,14 @@ public class MainActivity extends AppCompatActivity implements
     private LeaderboardsClient leaderboardsClient;
     private PlayersClient playersClient;
 
+    private String displayName;
+
     private static final int RC_UNUSED = 5001;
     private static final int RC_SIGN_IN = 9001;
 
     private static final String TAG = "Snake";
 
-    private SignInButton signInButton;
+    private ImageButton playGames_Button;
 
     private final AccomplishmentsOutbox outbox = new AccomplishmentsOutbox();
 
@@ -54,11 +61,60 @@ public class MainActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_main);
 
 
-        signInButton = findViewById(R.id.buttonGoogleReal);
-        signInButton.setOnClickListener(new View.OnClickListener() {
+
+
+        playGames_Button = findViewById(R.id.playGames_Button);
+        playGames_Button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //
+                if(displayName == null) {
+                    LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
+                    View promptView = layoutInflater.inflate(R.layout.prompt, null);
+                    AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this);
+                    alertdialog.setView(promptView);
+                    alertdialog.setCancelable(false)
+                            .setPositiveButton("Sign In", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    startActivityForResult(signInClient.getSignInIntent(), RC_SIGN_IN);
+                                }
+                            })
+                            .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // do nothing
+                                }
+                            });
+                    alertdialog.create();
+                    TextView googleloginstatus = (TextView) promptView.findViewById(R.id.googleloginstatus);
+                    googleloginstatus.setText("You are not signed in.");
+                    alertdialog.show();
+                }
+                else {
+                    LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
+                    View promptView = layoutInflater.inflate(R.layout.prompt, null);
+                    AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this);
+                    alertdialog.setView(promptView);
+                    alertdialog.setCancelable(false)
+                            .setPositiveButton("Sign Out", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    signOut();
+                                    Toast.makeText(MainActivity.this, "Successfully signed out", Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                            .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // do nothing
+                                }
+                            });
+                    alertdialog.create();
+                    TextView googleloginstatus = (TextView) promptView.findViewById(R.id.googleloginstatus);
+                    googleloginstatus.setText("You are signed in as " + displayName + ".");
+                    alertdialog.show();
+                }
+
             }
         });
 
@@ -73,12 +129,14 @@ public class MainActivity extends AppCompatActivity implements
                 Intent playIntent = new Intent(this, GameActivity.class);
                 startActivity(playIntent);
                 break;
+            /*
             case R.id.buttonGoogleIn:
                 startActivityForResult(signInClient.getSignInIntent(), RC_SIGN_IN);
                 break;
             case R.id.buttonGoogleOut:
                 signOut();
                 break;
+             */
         }
     }
 
@@ -222,7 +280,6 @@ public class MainActivity extends AppCompatActivity implements
                 .addOnCompleteListener(new OnCompleteListener<Player>() {
                     @Override
                     public void onComplete(Task<Player> task) {
-                        String displayName;
                         if (task.isSuccessful()) {
                             displayName = task.getResult().getDisplayName();
                             String welcomeText = "Welcome:" + displayName;

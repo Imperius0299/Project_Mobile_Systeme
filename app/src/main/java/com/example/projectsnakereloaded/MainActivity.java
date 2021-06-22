@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,6 +14,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -34,8 +37,12 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
+import processing.android.PFragment;
+
 public class MainActivity extends AppCompatActivity implements
-        Sketch.Callback {
+        Sketch.Callback,
+        MainMenuFragment.Listener,
+        SettingsFragment.Callback{
 
     private GoogleSignInClient signInClient;
 
@@ -52,9 +59,15 @@ public class MainActivity extends AppCompatActivity implements
 
     private static final String TAG = "Snake";
 
-    private ImageButton playGames_Button;
+    //private ImageButton playGames_Button;
 
     private final AccomplishmentsOutbox outbox = new AccomplishmentsOutbox();
+
+    private MainMenuFragment mainMenuFragment;
+    private PFragment pFragment;
+    private SettingsFragment settingsFragment;
+
+    private Sketch sketch;
 
 
     @Override
@@ -62,78 +75,104 @@ public class MainActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-
-
-        playGames_Button = findViewById(R.id.playGames_Button);
-        playGames_Button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(displayName == null) {
-                    LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
-                    View promptView = layoutInflater.inflate(R.layout.prompt, null);
-                    AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this);
-                    alertdialog.setView(promptView);
-                    alertdialog.setCancelable(false)
-                            .setPositiveButton("Sign In", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    startActivityForResult(signInClient.getSignInIntent(), RC_SIGN_IN);
-                                }
-                            })
-                            .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // do nothing
-                                }
-                            });
-                    alertdialog.create();
-                    TextView googleloginstatus = (TextView) promptView.findViewById(R.id.googleloginstatus);
-                    googleloginstatus.setText("You are not signed in.");
-                    alertdialog.show();
-                }
-                else {
-                    LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
-                    View promptView = layoutInflater.inflate(R.layout.prompt, null);
-                    AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this);
-                    alertdialog.setView(promptView);
-                    alertdialog.setCancelable(false)
-                            .setPositiveButton("Sign Out", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    signOut();
-                                    Toast.makeText(MainActivity.this, "Successfully signed out", Toast.LENGTH_SHORT).show();
-                                }
-                            })
-                            .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // do nothing
-                                }
-                            });
-                    alertdialog.create();
-                    TextView googleloginstatus = (TextView) promptView.findViewById(R.id.googleloginstatus);
-                    googleloginstatus.setText("You are signed in as " + displayName + ".");
-                    alertdialog.show();
-                }
-
-            }
-        });
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getSupportActionBar().hide();
 
         signInClient = GoogleSignIn.getClient(this,
                 new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN).build());
 
-        buttonLeaderboard = (ImageButton) findViewById(R.id.buttonLeaderboard);
+        mainMenuFragment = new MainMenuFragment();
+        pFragment = new PFragment();
+        settingsFragment = new SettingsFragment();
 
-        buttonLeaderboard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "onShowLeaderboardsRequested(): success");
+        mainMenuFragment.setListener(this);
+        settingsFragment.setCallback(this);
 
-                onShowLeaderboardsRequested();
-            }
-        });
+        getSupportFragmentManager().beginTransaction().add(R.id.container,
+                mainMenuFragment).commit();
 
+    }
+
+
+    // TODO: Prüfen ob erweitern für Settingfragment backpressed / Toolbar hinzufügen?
+    @Override
+    public void onBackPressed() {
+        if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            getSupportFragmentManager().popBackStack();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    private void switchToFragment(Fragment fragment) {
+        getSupportFragmentManager().beginTransaction().replace(R.id.container,
+                fragment).commit();
+    }
+
+    @Override
+    public void onPlayButtonClicked() {
+        sketch = new Sketch();
+        sketch.setCallback(this);
+        pFragment.setSketch(sketch);
+        switchToFragment(pFragment);
+    }
+
+    @Override
+    public void onSettingsButtonClicked() {
+        switchToFragment(settingsFragment);
+    }
+
+    @Override
+    public void onPlayGamesButtonClicked() {
+        if(displayName == null) {
+            LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
+            View promptView = layoutInflater.inflate(R.layout.prompt, null);
+            AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this);
+            alertdialog.setView(promptView);
+            alertdialog.setCancelable(false)
+                    .setPositiveButton("Sign In", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            startActivityForResult(signInClient.getSignInIntent(), RC_SIGN_IN);
+                        }
+                    })
+                    .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // do nothing
+                        }
+                    });
+            alertdialog.create();
+            TextView googleloginstatus = (TextView) promptView.findViewById(R.id.googleloginstatus);
+            googleloginstatus.setText("You are not signed in.");
+            alertdialog.show();
+        }
+        else {
+            LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
+            View promptView = layoutInflater.inflate(R.layout.prompt, null);
+            AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this);
+            alertdialog.setView(promptView);
+            alertdialog.setCancelable(false)
+                    .setPositiveButton("Sign Out", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            signOut();
+                            displayName = null;
+                            Toast.makeText(MainActivity.this, "Successfully signed out", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // do nothing
+                        }
+                    });
+            alertdialog.create();
+            TextView googleloginstatus = (TextView) promptView.findViewById(R.id.googleloginstatus);
+            googleloginstatus.setText("You are signed in as " + displayName + ".");
+            alertdialog.show();
+        }
     }
 
     public void buttonPressed(View view) {
@@ -156,7 +195,7 @@ public class MainActivity extends AppCompatActivity implements
                 break;
         }
     }
-
+/*
     public void getLeaderboardClient() {
         System.out.println(leaderboardsClient);
     }
@@ -165,8 +204,8 @@ public class MainActivity extends AppCompatActivity implements
         System.out.println("test123");
     }
 
-    //public void signIn (View view)
-
+    public void signIn (View view)
+*/
     private boolean isSignedIn() {
         return GoogleSignIn.getLastSignedInAccount(this) != null;
     }

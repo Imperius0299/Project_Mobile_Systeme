@@ -39,7 +39,6 @@ public class Sketch extends PApplet {
 
     @Override
     public void settings() {
-
         fullScreen();
     }
 
@@ -254,6 +253,7 @@ public class Sketch extends PApplet {
                 obstacle.show(this);
             }
 
+            //TODO: Texturen einfügen
             image(testImage, 0,0 , 1, 1);
 
             fill(255, 0, 0);
@@ -262,10 +262,11 @@ public class Sketch extends PApplet {
 
             endGame();
         }else {
+            //TODO: Loop unterbrechen, damit nicht immer abgeschickt
             //looping = !looping;
             finalScore = snake.getLen();
-            //callback.onEndedGameScore(finalScore);
-            ((GameActivity)getActivity()).testMethod();
+            callback.onEndedGameScore(finalScore);
+            //((GameActivity)getActivity()).testMethod();
             fill(200, 200, 0);
             textSize(24/rez * displayDensity);
             textAlign(CENTER, CENTER);

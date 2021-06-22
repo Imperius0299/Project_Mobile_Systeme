@@ -3,6 +3,7 @@ package com.example.projectsnakereloaded;
 import java.util.ArrayList;
 
 import processing.core.PApplet;
+import processing.core.PImage;
 import processing.core.PVector;
 
 public class Obstacle {
@@ -15,12 +16,8 @@ public class Obstacle {
         this.y = y;
     }
 
-    public void show(PApplet pApplet) {
-
-            pApplet.fill(139,69,19);
-            pApplet.noStroke();
-            pApplet.rect(this.x, this.y, 1, 1);
-
+    public void show(PApplet pApplet, PImage image) {
+            pApplet.image(image, this.x, this.y, 1, 1);
     }
 
     public PVector getPos() {

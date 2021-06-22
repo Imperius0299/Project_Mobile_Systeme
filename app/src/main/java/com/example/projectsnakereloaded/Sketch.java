@@ -1,13 +1,17 @@
 package com.example.projectsnakereloaded;
 
 import android.app.Activity;
+import android.content.res.AssetManager;
 import android.media.Image;
+import android.net.Uri;
 import android.telecom.Call;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GestureDetectorCompat;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import processing.core.PApplet;
@@ -26,6 +30,9 @@ public class Sketch extends PApplet {
     private int w;
     private int h;
 
+    private int randomPosX;
+    private int randomPosY;
+
     private int finalScore;
 
     interface Callback {
@@ -34,8 +41,9 @@ public class Sketch extends PApplet {
 
     private Callback callback = null;
 
-    PImage testImage;
-    PImage img;
+    PImage snakeImage;
+    PImage obstacleImage;
+    PImage foodImage;
 
     @Override
     public void settings() {
@@ -49,11 +57,17 @@ public class Sketch extends PApplet {
     }
 
 
+
     @Override
     public void setup() {
         // Quelle für png https://github.com/rembound/Snake-Game-HTML5
-        String url = "https://raw.githubusercontent.com/rembound/Snake-Game-HTML5/master/snake-graphics.png";
-        testImage = loadImage(url, "png");
+        //String url = "https://raw.githubusercontent.com/rembound/Snake-Game-HTML5/master/snake-graphics.png";
+        obstacleImage = loadImage("snake_brick.png");
+        foodImage = loadImage("snake_apple.png");
+        snakeImage = loadImage("snake_block.png");
+
+        System.out.println(dataPath(""));
+        //foodImage = loadImage();
         //image(testImage, 0, 0, 320, 320, 0, 0 ,64 ,64);
         //createImage()
 
@@ -230,7 +244,7 @@ public class Sketch extends PApplet {
         PVector pV4 = new PVector(w, 0);
 
         pV1.dist(pV2);
-        System.out.println(pV1.dist(pV2));
+        //System.out.println(pV1.dist(pV2));
         fill(255);
         line(0,0, w, h);
         line(w, 0, 0, h);
@@ -242,23 +256,25 @@ public class Sketch extends PApplet {
                 createFood();
             }
             snake.move((int) rez);
-            snake.show(this);
+            snake.show(this, snakeImage);
 
 
             if (frameCount % 30 == 0 && (snake.getDir().x != 0 || snake.getDir().y != 0)){
-                obstaclaList.add(new Obstacle((int) random(w), (int) random(h)));
+                randomPosX = (int) random(w);
+                randomPosY = (int) random(h);
+                obstaclaList.add(new Obstacle(randomPosX, randomPosY));
             }
 
             for (Obstacle obstacle : obstaclaList) {
-                obstacle.show(this);
+                obstacle.show(this, obstacleImage);
+                //image(testImage,randomPosX, randomPosY, 1, 1);
             }
 
-            //TODO: Texturen einfügen
-            image(testImage, 0,0 , 1, 1);
+            image(foodImage,food.x, food.y, 1, 1);
 
-            fill(255, 0, 0);
-            noStroke();
-            rect(food.x, food.y, 1, 1);
+
+            //image(testImage, randomPosX,randomPosY , 1, 1);
+
 
             endGame();
         }else {

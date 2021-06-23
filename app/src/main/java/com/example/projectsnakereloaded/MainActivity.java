@@ -302,6 +302,10 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    private void checkForAchievements(int score) {
+
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
@@ -369,7 +373,11 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onEndedGameScore(int score) {
 
+        checkForAchievements(score);
+
         updateLeaderboard(score);
+
+        pushAccomplishments();
     }
 
     private class AccomplishmentsOutbox {

@@ -33,6 +33,11 @@ public class Sketch extends PApplet {
     private int randomPosX;
     private int randomPosY;
 
+    private PVector pA;
+    private PVector pB;
+    private PVector pC;
+    private PVector pM;
+
     private int finalScore;
 
     interface Callback {
@@ -75,6 +80,12 @@ public class Sketch extends PApplet {
         w = floor(width / rez);
         h = floor(height / rez);
         frameRate(5);
+
+        //Eckpunkt- und Mittelpunktkoordinaten des Displays
+        pA = new PVector(0,0);
+        pB = new PVector(w, 0);
+        pC = new PVector(0, h);
+        pM = new PVector(w/2, h/2);
 
         snake = new Snake(w , h);
         obstaclaList = new ArrayList<>();
@@ -144,7 +155,11 @@ public class Sketch extends PApplet {
 
         float s = calcCircumference(a, b, c);
 
-        return heronsFormula(s, a, b, c);
+        return round(heronsFormula(s, a, b, c));
+    }
+
+    private float sumSquareTri(float a, float b, float c) {
+        return a + b + c;
     }
 
     @Override
@@ -155,22 +170,37 @@ public class Sketch extends PApplet {
         float mouseXRez = mouseX / rez;
         float mouseYRez = mouseY / rez;
 
-        // Koordinaten / Punkte der vier Ecken
-        PVector p0 = new PVector(0,0);
-        PVector p1 = new PVector(w, 0);
-
-
-        PVector p2 = new PVector(0, h);
-        PVector p3 = new PVector(w, h);
-        // Koordinaten des Mittelpunktes
-        PVector pM = new PVector(w/2, h/2);
+        PVector pMouse = new PVector(mouseXRez, mouseYRez);
 
 
         //Triangle 1 full (Top/ Bottom)
-        float a1 = calcSquareTriangle(p0, p1, pM);
+        float a1Full = calcSquareTriangle(pA, pB, pM);
+
+        float a11 = calcSquareTriangle(pA, pM, pMouse);
+        float a12 = calcSquareTriangle(pM, pB, pMouse);
+        float a13 = calcSquareTriangle(pA, pB, pMouse);
+
+        float a1MouseSum = sumSquareTri(a11, a12, a13);
 
         //Triangle 2 full (Left/Right)
-        float a2 = calcSquareTriangle(p0, p2, pM);
+        float a2Full = calcSquareTriangle(pA, pC, pM);
+
+        float a21 = calcSquareTriangle(pA, pM, pMouse);
+        float a22 = calcSquareTriangle(pM, pC, pMouse);
+        float a23 = calcSquareTriangle(pA, pC, pMouse);
+
+        float a2MouseSum = sumSquareTri(a21, a22, a23);
+
+        if (a1Full == a1MouseSum){
+            snake.setDir(0, -1);
+        } else if (a2Full == a2MouseSum) {
+            snake.setDir(-1, 0);
+        }
+
+        System.out.println(a1Full + ":" + a1MouseSum);
+        System.out.println(a2Full + ":" + a2MouseSum);
+
+
 
 
     }

@@ -167,8 +167,8 @@ public class Sketch extends PApplet {
         PVector snakeHead = snake.getHeadVect();
         PVector dir = snake.getDir();
 
-        float mouseXRez = mouseX / rez;
-        float mouseYRez = mouseY / rez;
+        float mouseXRez =  (mouseX / rez);
+        float mouseYRez =  (mouseY / rez);
 
         PVector pMouse = new PVector(mouseXRez, mouseYRez);
 

@@ -1,8 +1,10 @@
 package com.example.projectsnakereloaded;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.res.AssetManager;
 import android.media.Image;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.telecom.Call;
 import android.util.DisplayMetrics;
@@ -18,6 +20,8 @@ import processing.core.PApplet;
 import processing.core.PFont;
 import processing.core.PImage;
 import processing.core.PVector;
+import processing.sound.Sound;
+import processing.sound.SoundFile;
 
 public class Sketch extends PApplet {
 
@@ -49,6 +53,14 @@ public class Sketch extends PApplet {
     PImage snakeImage;
     PImage obstacleImage;
     PImage foodImage;
+    PImage backgroundImage;
+
+
+
+
+
+
+    // https://stackoverflow.com/questions/18459122/play-sound-on-button-click-android
 
     @Override
     public void settings() {
@@ -62,14 +74,21 @@ public class Sketch extends PApplet {
     }
 
 
+    //Sound sound;
+    //SoundFile soundFile;
 
     @Override
     public void setup() {
+
+        //soundFile = new SoundFile(this, "apfelsound_badum.mp3");
+
+
         // Quelle für png https://github.com/rembound/Snake-Game-HTML5
         //String url = "https://raw.githubusercontent.com/rembound/Snake-Game-HTML5/master/snake-graphics.png";
         obstacleImage = loadImage("snake_brick.png");
         foodImage = loadImage("snake_apple.png");
         snakeImage = loadImage("snake_block.png");
+        backgroundImage = loadImage("background_image.png");
 
         System.out.println(dataPath(""));
         //foodImage = loadImage();
@@ -260,6 +279,15 @@ public class Sketch extends PApplet {
     @Override
     public void draw() {
         background(197, 167, 225);
+
+
+        backgroundImage.resize(width, height);
+        image(backgroundImage, 0, 0);
+        textSize(50);
+        fill(255,255,255);
+        textAlign(LEFT);
+        text("Score: "+snake.getLen(), displayWidth/80, displayHeight/40);
+
         scale(rez);
         //rect(width/2,height/2,20 * displayDensity,20 * displayDensity);
         //text("Hello", width/2, height/2);
@@ -275,15 +303,26 @@ public class Sketch extends PApplet {
 
         pV1.dist(pV2);
         //System.out.println(pV1.dist(pV2));
+
+        /*
         fill(255);
         line(0,0, w, h);
         line(w, 0, 0, h);
+
+         */
+
+
+
+
+
+
 
         //createFood();
         if (!gameover) {
 
             if (snake.eat(food)) {
                 createFood();
+                //soundFile.play();
             }
             snake.move((int) rez);
             snake.show(this, snakeImage);
@@ -297,14 +336,10 @@ public class Sketch extends PApplet {
 
             for (Obstacle obstacle : obstaclaList) {
                 obstacle.show(this, obstacleImage);
-                //image(testImage,randomPosX, randomPosY, 1, 1);
+
             }
 
             image(foodImage,food.x, food.y, 1, 1);
-
-
-            //image(testImage, randomPosX,randomPosY , 1, 1);
-
 
             endGame();
         }else {
@@ -313,10 +348,21 @@ public class Sketch extends PApplet {
             finalScore = snake.getLen();
             callback.onEndedGameScore(finalScore);
             //((GameActivity)getActivity()).testMethod();
-            fill(200, 200, 0);
-            textSize(24/rez * displayDensity);
-            textAlign(CENTER, CENTER);
-            text("GAME OVER! \n Your Score is: " + finalScore + ". \n Click to restart!", w / 2, h / 3);
+            fill(255,255,255);
+            textAlign(CENTER);
+            textSize(sqrt((rez)/(displayWidth/rez)));
+
+            String gameovermessage;
+            gameovermessage = "LOL U DEAD";
+            text(gameovermessage,w/2, h/2);
+
+            textSize(2);
+            text("u dead lol", w/2, h/2+4);
+
+
+            textSize(3);
+            text("u dead lol", w/2, h/2+6);
+            //text("GAME OVER! \n Your Score is: " + finalScore + ". \n Click to restart!", w / 2, h / 3);
             if (mousePressed) {
                 gameover = false;
                 //looping = !looping;

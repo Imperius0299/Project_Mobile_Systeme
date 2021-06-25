@@ -54,13 +54,10 @@ public class Sketch extends PApplet {
     PImage obstacleImage;
     PImage foodImage;
     PImage backgroundImage;
+    PImage gameoverImage;
+    PFont Font;
 
-
-
-
-
-
-    // https://stackoverflow.com/questions/18459122/play-sound-on-button-click-android
+// https://stackoverflow.com/questions/18459122/play-sound-on-button-click-android
 
     @Override
     public void settings() {
@@ -83,12 +80,14 @@ public class Sketch extends PApplet {
         //soundFile = new SoundFile(this, "apfelsound_badum.mp3");
 
 
+
         // Quelle für png https://github.com/rembound/Snake-Game-HTML5
         //String url = "https://raw.githubusercontent.com/rembound/Snake-Game-HTML5/master/snake-graphics.png";
         obstacleImage = loadImage("snake_brick.png");
         foodImage = loadImage("snake_apple.png");
         snakeImage = loadImage("snake_block.png");
         backgroundImage = loadImage("background_image.png");
+        gameoverImage = loadImage("gameover_background.png");
 
         System.out.println(dataPath(""));
         //foodImage = loadImage();
@@ -99,6 +98,9 @@ public class Sketch extends PApplet {
         w = floor(width / rez);
         h = floor(height / rez);
         frameRate(5);
+
+        Font = createFont("The Impostor.ttf", rez/30);
+
 
         //Eckpunkt- und Mittelpunktkoordinaten des Displays
         pA = new PVector(0,0);
@@ -283,10 +285,23 @@ public class Sketch extends PApplet {
 
         backgroundImage.resize(width, height);
         image(backgroundImage, 0, 0);
-        textSize(50);
+        textAlign(CENTER, CENTER);
+        textFont(Font);
+        float tSizeHelper;
+        tSizeHelper = (min(displayHeight, displayWidth)/25);
+        textSize(tSizeHelper);
+
+        float scoreCoordinateX = (float) (width/7.5);
+        float scoreCoordinateY = height/60;
+
+        fill(0,0,0);
+        text("Score: "+snake.getLen(), (float) (scoreCoordinateX+Math.cbrt(scoreCoordinateX/2)), scoreCoordinateY);
+        text("Score: "+snake.getLen(), (float) (scoreCoordinateX-Math.cbrt(scoreCoordinateX/2)), scoreCoordinateY);
+        text("Score: "+snake.getLen(), scoreCoordinateX, (float) (scoreCoordinateY+Math.cbrt(scoreCoordinateX/2)));
+        text("Score: "+snake.getLen(), scoreCoordinateX, (float) (scoreCoordinateY-Math.cbrt(scoreCoordinateX/2)));
+
         fill(255,255,255);
-        textAlign(LEFT);
-        text("Score: "+snake.getLen(), displayWidth/80, displayHeight/40);
+        text("Score: "+snake.getLen(), scoreCoordinateX, scoreCoordinateY);
 
         scale(rez);
         //rect(width/2,height/2,20 * displayDensity,20 * displayDensity);
@@ -348,21 +363,28 @@ public class Sketch extends PApplet {
             finalScore = snake.getLen();
             callback.onEndedGameScore(finalScore);
             //((GameActivity)getActivity()).testMethod();
+
+            scale(1/rez);
+            gameoverImage.resize(width, height);
+            image(gameoverImage, 0, 0);
+            String gameovermessage = "Your score: "+finalScore+".";
+            String restartgame = "Tap to restart the game";
+            float minSizeW = textWidth(gameovermessage) ;
+            float minSizeH = (textDescent()+textAscent()) ;
+            float minSize = min(minSizeW, minSizeH);
+            textSize((float) (minSize*0.7));
+            fill(0,0,0);
+            text(gameovermessage, (float) ((width/2)*1.005), (float) (((height/2)-2*minSize)*1.005));
             fill(255,255,255);
-            textAlign(CENTER);
-            textSize(sqrt((rez)/(displayWidth/rez)));
-
-            String gameovermessage;
-            gameovermessage = "LOL U DEAD";
-            text(gameovermessage,w/2, h/2);
-
-            textSize(2);
-            text("u dead lol", w/2, h/2+4);
+            text(gameovermessage,width/2, (float) ((height/2)-2*minSize));
+            textSize((float) (minSize*0.5));
+            fill(0,0,0);
+            text(restartgame, (float) ((width/2)*1.004), (float) ((height/2)*1.004));
+            fill(255,255,255);
+            text(restartgame,width/2, (float) ((height/2)));
 
 
-            textSize(3);
-            text("u dead lol", w/2, h/2+6);
-            //text("GAME OVER! \n Your Score is: " + finalScore + ". \n Click to restart!", w / 2, h / 3);
+
             if (mousePressed) {
                 gameover = false;
                 //looping = !looping;

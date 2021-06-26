@@ -1,9 +1,13 @@
 package com.example.projectsnakereloaded;
 
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,6 +32,9 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
 
     private Listener listener = null;
 
+    private ImageButton buttonAchievements;
+    private ImageButton buttonLeaderboard;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -46,6 +53,9 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
         for (int button : buttonIds) {
             view.findViewById(button).setOnClickListener(this);
         }
+
+        buttonAchievements = view.findViewById(R.id.buttonAchievements);
+        buttonLeaderboard = view.findViewById(R.id.buttonLeaderboard);
 
         return view;
     }
@@ -72,6 +82,21 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
             case R.id.buttonPlay:
                 listener.onPlayButtonClicked();
                 break;
+        }
+    }
+
+    public void updateButtons(boolean isSignedIn) {
+        if (!isSignedIn) {
+            buttonAchievements.setEnabled(false);
+            buttonLeaderboard.setEnabled(false);
+
+            buttonAchievements.getDrawable().setColorFilter(Color.argb(155, 211,211,211), PorterDuff.Mode.SRC_ATOP);
+            buttonLeaderboard.getDrawable().setColorFilter(Color.argb(155, 211,211,211), PorterDuff.Mode.SRC_ATOP);
+        } else {
+            buttonAchievements.setEnabled(true);
+            buttonLeaderboard.setEnabled(true);
+            buttonAchievements.getDrawable().setColorFilter(null);
+            buttonLeaderboard.getDrawable().setColorFilter(null);
         }
     }
 

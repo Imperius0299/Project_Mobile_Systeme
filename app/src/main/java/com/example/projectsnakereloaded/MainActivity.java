@@ -40,6 +40,12 @@ import com.google.android.gms.tasks.Task;
 
 import processing.android.PFragment;
 
+/* Menu Sound by
+Superepic by Alexander Nakarada | https://www.serpentsoundstudios.com
+        Music promoted by https://www.chosic.com
+        Attribution 4.0 International (CC BY 4.0)
+        https://creativecommons.org/licenses/by/4.0/
+*/
 public class MainActivity extends AppCompatActivity implements
         Sketch.Callback,
         MainMenuFragment.Listener,
@@ -70,6 +76,8 @@ public class MainActivity extends AppCompatActivity implements
 
     private Sketch sketch;
 
+    private MediaPlayer mp;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +101,9 @@ public class MainActivity extends AppCompatActivity implements
         getSupportFragmentManager().beginTransaction().add(R.id.container,
                 mainMenuFragment).commit();
 
+        mp = MediaPlayer.create(this, R.raw.alexander_nakarada_superepic);
+        mp.setLooping(true);
+        mp.start();
     }
 
 
@@ -234,6 +245,19 @@ public class MainActivity extends AppCompatActivity implements
         Log.d(TAG, "onResume()");
 
         signInSilently();
+        mp.start();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mp.stop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        mp.release();
+        super.onDestroy();
     }
 
     private void signOut() {
@@ -248,6 +272,9 @@ public class MainActivity extends AppCompatActivity implements
                     public void onComplete(Task<Void> task) {
                         boolean successful = task.isSuccessful();
                         Log.d("TAG","signOut(): " + (successful ? "success" : "failed"));
+                        if (successful) {
+                            onDisconnected();
+                        }
                     }
                 });
     }
@@ -365,6 +392,8 @@ public class MainActivity extends AppCompatActivity implements
         leaderboardsClient = Games.getLeaderboardsClient(this, googleSignInAccount);
         playersClient = Games.getPlayersClient(this, googleSignInAccount);
 
+        mainMenuFragment.updateButtons(true);
+
         playersClient.getCurrentPlayer()
                 .addOnCompleteListener(new OnCompleteListener<Player>() {
                     @Override
@@ -393,6 +422,8 @@ public class MainActivity extends AppCompatActivity implements
         achievementsClient = null;
         leaderboardsClient = null;
         playersClient = null;
+
+        mainMenuFragment.updateButtons(false);
     }
 
     @Override

@@ -81,7 +81,6 @@ public class Sketch extends PApplet {
 
     @Override
     public void setup() {
-
         //soundFile = new SoundFile(this, "apfelsound_badum.mp3");
 
 
@@ -271,6 +270,8 @@ public class Sketch extends PApplet {
 
         System.out.println(aFull + ":" + a1Sum);
         System.out.println(aFull + ":" + a2Sum);
+        System.out.println(aFull + ":" + a3Sum);
+        System.out.println(aFull + ":" + a4Sum);
 
 
 
@@ -388,6 +389,7 @@ public class Sketch extends PApplet {
 
             if (snake.eat(food)) {
                 createFood();
+                ((MainActivity)getActivity()).playApfelsound();
                 //soundFile.play();
             }
 
@@ -428,6 +430,9 @@ public class Sketch extends PApplet {
             //looping = !looping;
             finalScore = snake.getLen();
             callback.onEndedGameScore(finalScore);
+
+
+            ((MainActivity)getActivity()).playDeathsound();
             //((GameActivity)getActivity()).testMethod();
 
             scale(1/rez);
@@ -453,48 +458,11 @@ public class Sketch extends PApplet {
 
             if (mousePressed) {
                 gameover = false;
-                //looping = !looping;
                 setup();
             }
         }
 
 
-        if (mousePressed) {
-            if (mouseY <= 250 || keyCode == UP) {
-                if(snake.getLen() == 1) {
-                    //System.out.println("test");
-                    //snake.setDir(0, -1);
-                }
-                else{
-                    //System.out.println("test");
-                    snake.setDir(0, -1);
-                }
-            }
-            else if ((mouseY > 250 && mouseY <= 1620 && mouseX <= 250) || keyCode == LEFT) {
-                if(snake.getLen() == 1) {
-                    //direction = 3; //LEFT
-                }
-                else{
-                    snake.setDir(-1, 0);
-                }
-            }
-            else if ((mouseY > 250 && mouseY <= 1200 && mouseX >= 830) || keyCode == RIGHT) {
-                if(snake.getLen() == 1) {
-                    //direction = 2; //Right
-                }
-                else{
-                    snake.setDir(1, 0);
-                }
-            }
-            else if ((mouseY >= 1200) || keyCode == DOWN) {
-                if(snake.getLen() == 1) {
-                    //direction = 0; //Down
-                }
-                else{
-                    snake.setDir(0, 1);
-                }
-            }
-        }
 
       /*  fill(0, 255, 0); //snake color green
         for (int i = 0; i < x.size(); i++)

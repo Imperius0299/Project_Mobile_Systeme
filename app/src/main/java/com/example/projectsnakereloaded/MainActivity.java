@@ -106,6 +106,18 @@ public class MainActivity extends AppCompatActivity implements
         mp.start();
     }
 
+    public void playApfelsound() {
+        mp = MediaPlayer.create(this, R.raw.apfelsound_badum);
+        mp.setLooping(false);
+        mp.start();
+    }
+
+    public void playDeathsound() {
+        mp = MediaPlayer.create(this, R.raw.tot_dum_dum_dum);
+        mp.setLooping(false);
+        mp.start();
+    }
+
 
     // TODO: Prüfen ob erweitern für Settingfragment backpressed / Toolbar hinzufügen?
     @Override

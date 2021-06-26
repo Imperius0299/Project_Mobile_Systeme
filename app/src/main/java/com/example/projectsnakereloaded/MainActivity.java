@@ -294,6 +294,23 @@ public class MainActivity extends AppCompatActivity implements
             outbox.easyModeScore);
             outbox.easyModeScore = -1;
         }
+        if (outbox.firstPoint) {
+            achievementsClient.unlock(getString(R.string.first_point));
+            outbox.firstPoint = false;
+        }
+        if (outbox.goodStart) {
+            achievementsClient.unlock(getString(R.string.good_start));
+            outbox.goodStart = false;
+        }
+        if (outbox.longerBetter) {
+            achievementsClient.unlock(getString(R.string.longer_better));
+            outbox.longerBetter = false;
+        }
+        if (outbox.longRun > 0) {
+            achievementsClient.increment(getString(R.string.long_run),
+                    outbox.longRun);
+            outbox.longRun = 0;
+        }
     }
 
 
@@ -304,7 +321,14 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void checkForAchievements(int score) {
-
+        if (score >= 1) {
+            outbox.firstPoint = true;
+        }
+        if (score == 25) {
+            outbox.longerBetter = true;
+        }
+        outbox.longRun++;
+        outbox.goodStart = true;
     }
 
     @Override
@@ -382,11 +406,21 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private class AccomplishmentsOutbox {
+        boolean firstPoint = false;
+        boolean goodStart = false;
+        boolean longerBetter = false;
+        boolean unlimitedPower = false;
+        boolean wasThereAnything = false;
+
+        int longRun = 0;
+
         int easyModeScore = -1;
         int hardModeScore = -1;
 
         boolean isEmpty() {
-            return easyModeScore < 0 && hardModeScore < 0;
+            return easyModeScore < 0 && hardModeScore < 0
+                    && firstPoint == false && goodStart == false && longerBetter == false
+                    && unlimitedPower == false && wasThereAnything == false && longRun == 0;
         }
     }
 }

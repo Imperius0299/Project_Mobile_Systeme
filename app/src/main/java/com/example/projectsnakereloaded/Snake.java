@@ -49,6 +49,23 @@ public class Snake {
         return false;
     }
 
+    public boolean collectItem(ArrayList<Item> itemList) {
+        PVector head = body.get(body.size() - 1).copy();
+
+        for (Item item : itemList) {
+            if (head.x == item.getPos().x && head.y == item.getPos().y) {
+                getItemPower(item);
+                return true;
+            }
+        }
+        return false;
+    }
+    public void getItemPower(Item item) {
+        if (item.getClass() == Mushroom.class) {
+            //Todo: Implement Feature
+        }
+    }
+
     public void show(PApplet pApplet, PImage image) {
         for (int i = 0; i< body.size(); i++) {
             pApplet.image(image, body.get(i).x, body.get(i).y, 1, 1);

@@ -20,26 +20,31 @@ import processing.core.PApplet;
 import processing.core.PFont;
 import processing.core.PImage;
 import processing.core.PVector;
-import processing.sound.Sound;
-import processing.sound.SoundFile;
+//import processing.sound.Sound;
+//import processing.sound.SoundFile;
 
 public class Sketch extends PApplet {
 
     private boolean gameover = false;
     private Snake snake;
     private PVector food;
+
     private ArrayList<Obstacle> obstaclaList;
+    private ArrayList<Item> itemList;
 
     private float rez;
     private int w;
     private int h;
 
+    /*
     private int randomPosX;
     private int randomPosY;
+    */
 
     private PVector pA;
     private PVector pB;
     private PVector pC;
+    private PVector pD;
     private PVector pM;
 
     private int finalScore;
@@ -106,10 +111,12 @@ public class Sketch extends PApplet {
         pA = new PVector(0,0);
         pB = new PVector(w, 0);
         pC = new PVector(0, h);
+        pD = new PVector(w, h);
         pM = new PVector(w/2, h/2);
 
         snake = new Snake(w , h);
         obstaclaList = new ArrayList<>();
+        itemList = new ArrayList<>();
         createFood();
 
         //Zum Prüfen des Grids
@@ -164,8 +171,8 @@ public class Sketch extends PApplet {
     }
 
     // Berechne die Fläche eines beliebigen Dreiecks
-    private float heronsFormula(float s, float a, float b, float c) {
-        return sqrt(s * (s - a) * (s - b) * (s - c));
+    private float heronsFormula(float a, float b, float c) {
+        return sqrt((a + b + c) * (-a + b + c) * (a - b + c) * (a + b - c)) / 4;
     }
 
     private float calcSquareTriangle(PVector p0, PVector p1, PVector p2) {
@@ -174,13 +181,20 @@ public class Sketch extends PApplet {
         float b = edges[1];
         float c = edges[2];
 
-        float s = calcCircumference(a, b, c);
-
-        return round(heronsFormula(s, a, b, c));
+        return heronsFormula(a, b, c);
     }
 
     private float sumSquareTri(float a, float b, float c) {
-        return a + b + c;
+        return round(a + b + c);
+    }
+
+    private float calculatePartialTriangleTotalSquare(PVector p1, PVector p2, PVector p3, PVector pMouse) {
+
+        float squareA = calcSquareTriangle(p1, p2, pMouse);
+        float squareB = calcSquareTriangle(p1, p3, pMouse);
+        float squareC = calcSquareTriangle(p2, p3, pMouse);
+
+        return round(squareA + squareB + squareC);
     }
 
     @Override
@@ -194,32 +208,69 @@ public class Sketch extends PApplet {
         PVector pMouse = new PVector(mouseXRez, mouseYRez);
 
 
-        //Triangle 1 full (Top/ Bottom)
-        float a1Full = calcSquareTriangle(pA, pB, pM);
-
+        //Triangle 1 full Top
+        float aFull = round(calcSquareTriangle(pA, pB, pM));
+        /*
         float a11 = calcSquareTriangle(pA, pM, pMouse);
         float a12 = calcSquareTriangle(pM, pB, pMouse);
         float a13 = calcSquareTriangle(pA, pB, pMouse);
 
         float a1MouseSum = sumSquareTri(a11, a12, a13);
+         */
+        float a1Sum = calculatePartialTriangleTotalSquare(pA, pB, pM, pMouse);
 
-        //Triangle 2 full (Left/Right)
-        float a2Full = calcSquareTriangle(pA, pC, pM);
+        float a2Sum = calculatePartialTriangleTotalSquare(pA, pC, pM, pMouse);
 
+        float a3Sum = calculatePartialTriangleTotalSquare(pB, pD, pM, pMouse);
+
+        float a4Sum = calculatePartialTriangleTotalSquare(pC, pD, pM, pMouse);
+
+
+        //float a31 = calcSquareTriangle()
+
+        //Triangle 2 full Left
+        //float a2Full = round(calcSquareTriangle(pA, pC, pM));
+
+        /*
         float a21 = calcSquareTriangle(pA, pM, pMouse);
         float a22 = calcSquareTriangle(pM, pC, pMouse);
         float a23 = calcSquareTriangle(pA, pC, pMouse);
 
         float a2MouseSum = sumSquareTri(a21, a22, a23);
+        */
+        // Right
 
-        if (a1Full == a1MouseSum){
+        //float a3Full = round(calcSquareTriangle(pB, pD, pM));
+
+        /*
+        float a31 = calcSquareTriangle(pB, pM, pMouse);
+        float a32 = calcSquareTriangle(pM, pD, pMouse);
+        float a33 = calcSquareTriangle(pB, pD, pMouse);
+
+        float a3MouseSum = sumSquareTri(a31, a32, a33);
+        */
+        // Bottom
+
+        //float a4Full = round(calcSquareTriangle(pC, pD, pM));
+        /*
+        float a41 = calcSquareTriangle(pC, pM, pMouse);
+        float a42 = calcSquareTriangle(pM, pD, pMouse);
+        float a43 = calcSquareTriangle(pC, pD, pMouse);
+
+        float a4MouseSum = sumSquareTri(a41, a42, a43);
+        */
+        if (aFull == a1Sum){
             snake.setDir(0, -1);
-        } else if (a2Full == a2MouseSum) {
+        } else if (aFull == a2Sum) {
             snake.setDir(-1, 0);
+        } else if (aFull == a3Sum) {
+            snake.setDir(1, 0);
+        } else if (aFull == a4Sum) {
+            snake.setDir(0, 1);
         }
 
-        System.out.println(a1Full + ":" + a1MouseSum);
-        System.out.println(a2Full + ":" + a2MouseSum);
+        System.out.println(aFull + ":" + a1Sum);
+        System.out.println(aFull + ":" + a2Sum);
 
 
 
@@ -339,19 +390,34 @@ public class Sketch extends PApplet {
                 createFood();
                 //soundFile.play();
             }
+
+            if (snake.collectItem(itemList)) {
+                //Todo: Implement Feature Sound
+            }
             snake.move((int) rez);
             snake.show(this, snakeImage);
 
 
-            if (frameCount % 30 == 0 && (snake.getDir().x != 0 || snake.getDir().y != 0)){
-                randomPosX = (int) random(w);
-                randomPosY = (int) random(h);
-                obstaclaList.add(new Obstacle(randomPosX, randomPosY));
+            if ((snake.getDir().x != 0 || snake.getDir().y != 0)){
+                if (frameCount % 30 == 0) {
+                    int randomPosX = (int) random(w);
+                    int randomPosY = (int) random(h);
+                    obstaclaList.add(new Obstacle(randomPosX, randomPosY));
+                }
+                if (frameCount % 60 == 0) {
+                    int randomPosX = (int) random(w);
+                    int randomPosy = (int) random(h);
+                    itemList.add(new Mushroom(randomPosX, randomPosy));
+                }
             }
 
             for (Obstacle obstacle : obstaclaList) {
                 obstacle.show(this, obstacleImage);
 
+            }
+
+            for (Item item : itemList) {
+                item.show(this);
             }
 
             image(foodImage,food.x, food.y, 1, 1);

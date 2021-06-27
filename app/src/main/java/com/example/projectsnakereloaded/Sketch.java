@@ -8,6 +8,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.telecom.Call;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import androidx.core.content.ContextCompat;
@@ -32,9 +33,14 @@ public class Sketch extends PApplet {
     private ArrayList<Obstacle> obstaclaList;
     private ArrayList<Item> itemList;
 
+    private int width;
+    private int height;
+
     private float rez;
     private int w;
     private int h;
+
+    private static final String TAG = "Snake";
 
     /*
     private int randomPosX;
@@ -64,9 +70,14 @@ public class Sketch extends PApplet {
 
 // https://stackoverflow.com/questions/18459122/play-sound-on-button-click-android
 
+    public Sketch(int width, int height) {
+        this.width = width;
+        this.height = height;
+    }
     @Override
     public void settings() {
         fullScreen();
+        size(width, height);
     }
 
 
@@ -119,7 +130,7 @@ public class Sketch extends PApplet {
         createFood();
 
         //Zum Prüfen des Grids
-        System.out.println(height * displayDensity + "llss" + width * displayDensity);
+        System.out.println(displayHeight * pixelDensity + "llss" + displayWidth * pixelDensity);
         System.out.println(snake.getHeadVect().x + "," + snake.getHeadVect().y);
         System.out.println(w + "," + h);
 
@@ -208,7 +219,10 @@ public class Sketch extends PApplet {
 
 
         //Triangle 1 full Top
-        float aFull = round(calcSquareTriangle(pA, pB, pM));
+        float a1Full = round(calcSquareTriangle(pA, pB, pM));
+        float a2Full = round(calcSquareTriangle(pA, pC, pM));
+        float a3Full = round(calcSquareTriangle(pB, pD, pM));
+        float a4Full = round(calcSquareTriangle(pC, pD, pM));
         /*
         float a11 = calcSquareTriangle(pA, pM, pMouse);
         float a12 = calcSquareTriangle(pM, pB, pMouse);
@@ -258,24 +272,26 @@ public class Sketch extends PApplet {
 
         float a4MouseSum = sumSquareTri(a41, a42, a43);
         */
-        if (aFull == a1Sum){
+        if (a1Full == a1Sum){
             snake.setDir(0, -1);
-        } else if (aFull == a2Sum) {
+        } else if (a2Full == a2Sum) {
             snake.setDir(-1, 0);
-        } else if (aFull == a3Sum) {
+        } else if (a3Full == a3Sum) {
             snake.setDir(1, 0);
-        } else if (aFull == a4Sum) {
+        } else if (a4Full == a4Sum) {
             snake.setDir(0, 1);
         }
 
-        System.out.println(aFull + ":" + a1Sum);
-        System.out.println(aFull + ":" + a2Sum);
-        System.out.println(aFull + ":" + a3Sum);
-        System.out.println(aFull + ":" + a4Sum);
+        Log.d(TAG, a1Full + ":" + a1Sum);
+        Log.d(TAG, a2Full + ":" + a2Sum);
+        Log.d(TAG, a3Full + ":" + a3Sum);
+        Log.d(TAG, a4Full + ":" + a4Sum);
 
-
-
-
+        if (gameover) {
+            loop();
+            gameover = false;
+            setup();
+        }
     }
 
     @Override
@@ -295,32 +311,32 @@ public class Sketch extends PApplet {
 
     @Override
     public void keyPressed() {
-        if (key == CODED) {
+        if (key == CODED && (frameCount % 1 == 0)) {
             switch (keyCode) {
-                case UP:
-                    if (snake.getBody().size() > 1 && snake.getDir().y == 1){
+                    case UP:
+                        if (snake.getBody().size() > 1 && snake.getDir().y == 1) {
+                            break;
+                        }
+                        snake.setDir(0, -1);
                         break;
-                    }
-                    snake.setDir(0, -1);
-                    break;
-                case DOWN:
-                    if (snake.getBody().size() > 1 && snake.getDir().y == -1){
+                    case DOWN:
+                        if (snake.getBody().size() > 1 && snake.getDir().y == -1) {
+                            break;
+                        }
+                        snake.setDir(0, 1);
                         break;
-                    }
-                    snake.setDir(0, 1);
-                    break;
-                case LEFT:
-                    if (snake.getBody().size() > 1 && snake.getDir().x == 1){
+                    case LEFT:
+                        if (snake.getBody().size() > 1 && snake.getDir().x == 1) {
+                            break;
+                        }
+                        snake.setDir(-1, 0);
                         break;
-                    }
-                    snake.setDir(-1, 0);
-                    break;
-                case RIGHT:
-                    if (snake.getBody().size() > 1 && snake.getDir().x == -1){
+                    case RIGHT:
+                        if (snake.getBody().size() > 1 && snake.getDir().x == -1) {
+                            break;
+                        }
+                        snake.setDir(1, 0);
                         break;
-                    }
-                    snake.setDir(1, 0);
-                    break;
             }
         }
     }
@@ -428,9 +444,10 @@ public class Sketch extends PApplet {
         }else {
             //TODO: Loop unterbrechen, damit nicht immer abgeschickt
             //looping = !looping;
+            noLoop();
             finalScore = snake.getLen();
             callback.onEndedGameScore(finalScore);
-
+            //callback.
 
             ((MainActivity)getActivity()).playDeathsound();
             //((GameActivity)getActivity()).testMethod();
@@ -454,95 +471,6 @@ public class Sketch extends PApplet {
             fill(255,255,255);
             text(restartgame,width/2, (float) ((height/2)));
 
-
-
-            if (mousePressed) {
-                gameover = false;
-                setup();
-            }
         }
-
-
-
-      /*  fill(0, 255, 0); //snake color green
-        for (int i = 0; i < x.size(); i++)
-            rect(x.get(i) * blocks, y.get(i) * blocks, blocks, blocks); //snake
-        if (!gameover) {
-            fill(fc1, fc2, fc3); //food color red
-            ellipse(foodx * blocks + 10, foody * blocks + 10, blocks, blocks); //food
-            textAlign(LEFT); //score
-            textSize(45);
-            fill(255);
-            text("Score: " + x.size(), 10, 10, width - 20, 50);
-            if (frameCount % speed == 0) {
-                x.add(0, x.get(0) + x_direction[direction]); //make snake longer
-                y.add(0, y.get(0) + y_direction[direction]);
-                if (x.get(0) < 0 || y.get(0) < 0 || x.get(0) >= w || y.get(0) >= h) gameover = true;
-                for (int i = 1; i < x.size(); i++)
-                    if (x.get(0) == x.get(i) && y.get(0) == y.get(i)) gameover = true;
-                if (x.get(0) == foodx && y.get(0) == foody) { //new food if we touch
-                    if (x.size() % 5 == 0 && speed >= 2)
-                        speed -= 1;  // every 5 points speed increase
-                    foodx = (int) random(0, w); //new food
-                    foody = (int) random(0, h);
-                    fc1 = (int) random(255);
-                    fc2 = (int) random(255);
-                    fc3 = (int) random(255); //new food color
-                } else {
-                    x.remove(x.size() - 1);
-                    y.remove(y.size() - 1);
-                }
-            }
-        } else {
-            fill(200, 200, 0);
-            textSize(displayWidth / 15);
-            textAlign(CENTER);
-            text("GAME OVER! \n Your Score is: " + x.size() + ". \n Click to restart!", width / 2, height / 3);
-            if (mousePressed) {
-                x.clear();
-                y.clear();
-                x.add(0);
-                y.add(15);
-                direction = 2;
-                speed = 8;
-                gameover = false;
-            }
-        }
-
-
-        if (mousePressed) {
-            if (mouseY <= 250) {
-                if(x.size() == 1) {
-                    direction = 1;
-                }
-                else if (direction != 0) {
-                    direction = 1; //UP
-                }
-            }
-            else if (mouseY > 250 && mouseY <= 1620 && mouseX <= 250) {
-                if(x.size() == 1) {
-                    direction = 3; //LEFT
-                }
-                else if (direction != 2) {
-                    direction = 3; //LEFT
-                }
-            }
-            else if (mouseY > 250 && mouseY <= 1620 && mouseX >= 830) {
-                if(x.size() == 1) {
-                    direction = 2; //LEFT
-                }
-                else if (direction != 3) {
-                    direction = 2; //LEFT
-                }
-            }
-            else if (mouseY >= 1620) {
-                if(x.size() == 1) {
-                    direction = 0; //LEFT
-                }
-                else if (direction != 1) {
-                    direction = 0; //LEFT
-                }
-            }
-        } */
     }
 }

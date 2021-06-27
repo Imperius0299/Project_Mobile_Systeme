@@ -85,6 +85,7 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
         }
     }
 
+    //Todo : fixen wenn von fragmet zurück
     public void updateButtons(boolean isSignedIn) {
         if (!isSignedIn) {
             buttonAchievements.setEnabled(false);

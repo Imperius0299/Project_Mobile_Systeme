@@ -34,7 +34,8 @@ public class GameActivity extends AppCompatActivity {
         getSupportActionBar().hide();
         int mHeight = this.getResources().getDisplayMetrics().heightPixels;
         int mWidth = this.getResources().getDisplayMetrics().widthPixels;
-        sketch = new Sketch();
+
+        //sketch = new Sketch();
         PFragment fragment = new PFragment(sketch);
         fragment.setView(frame, this);
         //setContentView(R.layout.activity_main);

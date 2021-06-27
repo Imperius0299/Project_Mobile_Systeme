@@ -14,7 +14,14 @@ public class Stats {
 
     //public String date;
     public int highestScore;
-    public int deaths;
-    public int numFieldsMoved;
-    public int numItemsPickedUp;
+    public int totalScore;
+    public int totalDeaths;
+    public int totalFieldsMoved;
+    public int totalItemsPickedUp;
+
+    public Stats(int highestScore, int totalScore, int totalDeaths) {
+        this.highestScore = highestScore;
+        this.totalScore = totalScore;
+        this.totalDeaths = totalDeaths;
+    }
 }

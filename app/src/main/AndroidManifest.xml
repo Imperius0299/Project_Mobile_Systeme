@@ -3,6 +3,7 @@
     package="com.example.projectsnakereloaded">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <supports-screens android:anyDensity="true"/>
 
     <application
         android:allowBackup="true"
@@ -19,7 +20,8 @@
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
-
+        <meta-data
+            android:name="android.max_aspect" android:value="2.0"/>
         <activity android:name=".MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>

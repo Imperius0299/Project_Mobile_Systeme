@@ -15,8 +15,9 @@ public interface StatsDao {
     long addStats(Stats stats);
 
     @Query("select * from stats")
-    List<Stats> getStats();
+    Stats getStats();
 
-    @Update(onConflict = OnConflictStrategy.REPLACE)
-    void updateStats(Stats stats);
+    @Query("Update stats set highestScore =:highestScore, totalScore = :totalScore, totalDeaths= :totalDeaths where id = :id")
+    void updateStats(int highestScore, int totalScore, int totalDeaths, long id);
+
 }

@@ -61,7 +61,7 @@ public class Snake {
         return false;
     }
     public void getItemPower(Item item) {
-        if (item.getClass() == Mushroom.class) {
+        if (item.getClass() == SpeedBoost.class) {
             //Todo: Implement Feature
         }
     }

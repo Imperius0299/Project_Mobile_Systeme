@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements
     public static final String BACKSTACK_KEY = "myBackstack";
     SharedPreferences.OnSharedPreferenceChangeListener listener;
 
-
+    //Window Fullscreen https://www.tutorialspoint.com/how-to-get-full-screen-activity-in-android
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -210,34 +210,38 @@ public class MainActivity extends AppCompatActivity implements
     public void onPlayerstatsButtonClicked() {
         LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
         View playerstatsView = layoutInflater.inflate(R.layout.playerstats, null);
-        AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this);
-        alertdialog.setView(playerstatsView);
-        alertdialog.setCancelable(false)
+        AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this, R.style.MyTheme);
+        alertdialog.setView(playerstatsView)
+                .setCancelable(false)
                 .setNegativeButton("Close", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         //close
                     }
-                });
-        alertdialog.create();
-        String highestScore = "Test highestScore";
-        String totalScore = "Test totalScore";
-        String totalDeaths = "Test totalDeaths";
-        String totalFieldsMoved = "Test totalFieldsMoved";
-        String totalItemsPickedUp = "Test totalItemsPickedUp";
+                })
+                .create();
 
         TextView highestScoreTextView = (TextView) playerstatsView.findViewById(R.id.highestScore);
-        highestScoreTextView.setText(highestScore);
         TextView totalScoreTextView = (TextView) playerstatsView.findViewById(R.id.totalScore);
-        totalScoreTextView.setText(totalScore);
         TextView totalDeathsTextView = (TextView) playerstatsView.findViewById(R.id.totalDeaths);
-        totalDeathsTextView.setText(totalDeaths);
         TextView totalFieldsMovedTextView = (TextView) playerstatsView.findViewById(R.id.totalFieldsMoved);
-        totalFieldsMovedTextView.setText(totalFieldsMoved);
         TextView totalItemsPickedUpTextView = (TextView) playerstatsView.findViewById(R.id.totalItemsPickedUp);
+
+        Stats stats = database.statsDao().getStats();
+        String highestScore = "Highest Score: " + stats.highestScore;
+        String totalScore = "Total Score: " + stats.totalScore ;
+        String totalDeaths = "Total Deaths: "  + stats.totalDeaths;
+        String totalFieldsMoved = "Total Fields Moved: " + stats.totalFieldsMoved;
+        String totalItemsPickedUp = "Total Items Picked Up: " + stats.totalItemsPickedUp;
+
+        highestScoreTextView.setText(highestScore);
+        totalScoreTextView.setText(totalScore);
+        totalDeathsTextView.setText(totalDeaths);
+        totalFieldsMovedTextView.setText(totalFieldsMoved);
         totalItemsPickedUpTextView.setText(totalItemsPickedUp);
 
         alertdialog.show();
+
     }
 
     @Override
@@ -292,26 +296,6 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    public void buttonPressed(View view) {
-        switch (view.getId()) {
-            case R.id.buttonPlay:
-                Intent playIntent = new Intent(this, GameActivity.class);
-                startActivity(playIntent);
-                break;
-            /*
-            case R.id.buttonGoogleIn:
-                startActivityForResult(signInClient.getSignInIntent(), RC_SIGN_IN);
-                break;
-            case R.id.buttonGoogleOut:
-                signOut();
-                break;
-             */
-            case R.id.buttonLeaderboard:
-                System.out.println("Test12334");
-                onShowLeaderboardsRequested();
-                break;
-        }
-    }
 /*
     public void getLeaderboardClient() {
         System.out.println(leaderboardsClient);

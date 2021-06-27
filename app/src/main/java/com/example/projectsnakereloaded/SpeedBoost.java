@@ -1,11 +1,13 @@
 package com.example.projectsnakereloaded;
 
-public class Mushroom extends Item{
+import processing.core.PImage;
+
+public class SpeedBoost extends Item{
 
     private int speedBoost;
 
-    public Mushroom(int x, int y) {
-        super(x, y);
+    public SpeedBoost(int x, int y, PImage image) {
+        super(x, y, image);
         speedBoost = 3;
     }
 

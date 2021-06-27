@@ -1,20 +1,8 @@
 package com.example.projectsnakereloaded;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.res.AssetManager;
-import android.media.Image;
-import android.media.MediaPlayer;
-import android.net.Uri;
-import android.telecom.Call;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.MotionEvent;
 
-import androidx.core.content.ContextCompat;
-import androidx.core.view.GestureDetectorCompat;
-
-import java.io.IOException;
 import java.util.ArrayList;
 
 import processing.core.PApplet;
@@ -66,6 +54,9 @@ public class Sketch extends PApplet {
     PImage foodImage;
     PImage backgroundImage;
     PImage gameoverImage;
+    PImage itemSpeedBoostImage;
+    PImage itemSpeedLossImage;
+    PImage itemPowerStarImage;
     PFont Font;
 
 // https://stackoverflow.com/questions/18459122/play-sound-on-button-click-android
@@ -103,6 +94,10 @@ public class Sketch extends PApplet {
         snakeImage = loadImage("snake_block.png");
         backgroundImage = loadImage("background_image_stone.png");
         gameoverImage = loadImage("gameover_background.png");
+        itemSpeedBoostImage = loadImage("item_speedup.png");
+        itemSpeedLossImage = loadImage("item_speeddown.png");
+        itemPowerStarImage = loadImage("item_stern.png");
+
 
         System.out.println(dataPath(""));
         //foodImage = loadImage();
@@ -273,12 +268,24 @@ public class Sketch extends PApplet {
         float a4MouseSum = sumSquareTri(a41, a42, a43);
         */
         if (a1Full == a1Sum){
+            if (snake.getBody().size() > 1 && snake.getDir().y == 1) {
+                return;
+            }
             snake.setDir(0, -1);
         } else if (a2Full == a2Sum) {
+            if (snake.getBody().size() > 1 && snake.getDir().x == 1) {
+                return;
+            }
             snake.setDir(-1, 0);
         } else if (a3Full == a3Sum) {
+            if (snake.getBody().size() > 1 && snake.getDir().x == -1) {
+                return;
+            }
             snake.setDir(1, 0);
         } else if (a4Full == a4Sum) {
+            if (snake.getBody().size() > 1 && snake.getDir().y == -1) {
+                return;
+            }
             snake.setDir(0, 1);
         }
 
@@ -423,9 +430,22 @@ public class Sketch extends PApplet {
                     obstaclaList.add(new Obstacle(randomPosX, randomPosY));
                 }
                 if (frameCount % 60 == 0) {
+                    int randomItem = (int) random(0, 3);
+
                     int randomPosX = (int) random(w);
-                    int randomPosy = (int) random(h);
-                    itemList.add(new Mushroom(randomPosX, randomPosy));
+                    int randomPosY = (int) random(h);
+
+                    switch (randomItem) {
+                        case 0:
+                            itemList.add(new SpeedBoost(randomPosX, randomPosY, itemSpeedBoostImage));
+                            break;
+                        case 1:
+                            itemList.add(new SpeedLoss(randomPosX, randomPosY, itemSpeedLossImage));
+                            break;
+                        case 2:
+                            itemList.add(new PowerStar(randomPosX, randomPosY, itemPowerStarImage));
+                            break;
+                    }
                 }
             }
 

@@ -1,52 +1,546 @@
 package com.example.projectsnakereloaded;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.preference.PreferenceManager;
 
+import android.app.StatusBarManager;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.media.MediaPlayer;
+import android.nfc.Tag;
+import android.os.Build;
 import android.os.Bundle;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.TextView;
+import android.widget.Toast;
 
-import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.Api;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.games.AchievementsClient;
+import com.google.android.gms.games.Games;
+import com.google.android.gms.games.LeaderboardsClient;
+import com.google.android.gms.games.Player;
+import com.google.android.gms.games.PlayersClient;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
-import processing.android.CompatUtils;
 import processing.android.PFragment;
-import processing.core.PApplet;
 
-public class MainActivity extends AppCompatActivity {
+/* Menu Sound by
+Superepic by Alexander Nakarada | https://www.serpentsoundstudios.com
+        Music promoted by https://www.chosic.com
+        Attribution 4.0 International (CC BY 4.0)
+        https://creativecommons.org/licenses/by/4.0/
+*/
+public class MainActivity extends AppCompatActivity implements
+        Sketch.Callback,
+        MainMenuFragment.Listener,
+        SettingsFragment.Callback{
 
-    private PApplet sketch;
+    private GoogleSignInClient signInClient;
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (sketch != null) {
-            sketch.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
+    private ImageButton buttonLeaderboard;
+
+    private AchievementsClient achievementsClient;
+    private LeaderboardsClient leaderboardsClient;
+    private PlayersClient playersClient;
+
+    private String displayName;
+
+    private static final int RC_UNUSED = 5001;
+    private static final int RC_SIGN_IN = 9001;
+
+    private static final String TAG = "Snake";
+
+    //private ImageButton playGames_Button;
+
+    private final AccomplishmentsOutbox outbox = new AccomplishmentsOutbox();
+
+    private MainMenuFragment mainMenuFragment;
+    private PFragment pFragment;
+    private SettingsFragment settingsFragment;
+
+    private Sketch sketch;
+
+    private MediaPlayer mp;
+
+    private AppDatabase database;
+
+    public static final String BACKSTACK_KEY = "myBackstack";
+    SharedPreferences.OnSharedPreferenceChangeListener listener;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        FrameLayout frame = new FrameLayout(this);
-        frame.setId(CompatUtils.getUniqueViewId());
-        setContentView(frame, new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
+        setContentView(R.layout.activity_main);
 
-        sketch = new Sketch();
-        PFragment fragment = new PFragment(sketch);
-        fragment.setView(frame, this);
-        //setContentView(R.layout.activity_main);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getSupportActionBar().hide();
+
+
+        // Lösung für Aspect Ratio / Black Bar https://stackoverflow.com/a/60259591
+
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_LOW_PROFILE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            getWindow().getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+        }
+
+        signInClient = GoogleSignIn.getClient(this,
+                new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN).build());
+
+        mainMenuFragment = new MainMenuFragment();
+        pFragment = new PFragment();
+        settingsFragment = new SettingsFragment();
+
+        mainMenuFragment.setListener(this);
+        settingsFragment.setCallback(this);
+
+        database = AppDatabase.getDatabase(this);
+
+        getSupportFragmentManager().beginTransaction().add(R.id.container,
+                mainMenuFragment).commit();
+
+
+        mp = MediaPlayer.create(this, R.raw.loyalty_freak_music_everyone_is_so_alive);
+        mp.setLooping(true);
+
+        listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                if (key.equals("music")) {
+                    checkMusicAndPlay();
+                }
+            }
+        };
+
+        //checkMusicAndPlay();
+
+
+
+    }
+
+
+    //Todo: Problem wenn Musik ausgeschaltet wird fixen
+    public void checkMusicAndPlay() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if (prefs.getBoolean("music", true)) {
+            mp.start();
+        }
+    }
+
+    public void playApfelsound() {
+        mp = MediaPlayer.create(this, R.raw.apfelsound_badum);
+        mp.setLooping(false);
+        mp.start();
+    }
+
+    public void playDeathsound() {
+        mp = MediaPlayer.create(this, R.raw.tot_dum_dum_dum);
+        mp.setLooping(false);
+        mp.start();
+    }
+
+
+
+    // TODO: Prüfen ob erweitern für Settingfragment backpressed / Toolbar hinzufügen?
+    @Override
+    public void onBackPressed() {
+        if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            getSupportFragmentManager().popBackStack();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    private void switchToFragment(Fragment fragment) {
+        getSupportFragmentManager().beginTransaction().replace(R.id.container,
+                fragment).addToBackStack(BACKSTACK_KEY).setReorderingAllowed(true).commit();
+    }
+
+    @Override
+    public void onPlayButtonClicked() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getRealMetrics(displayMetrics);
+        //getWindowManager().getMaximumWindowMetrics().
+        int height = displayMetrics.heightPixels;
+        int width = displayMetrics.widthPixels;
+
+        System.out.println(height + ":" + width);
+
+        sketch = new Sketch(width, height);
+        sketch.setCallback(this);
+        pFragment.setSketch(sketch);
+        switchToFragment(pFragment);
+    }
+
+    @Override
+    public void onSettingsButtonClicked() {
+        switchToFragment(settingsFragment);
+    }
+
+    @Override
+    public void onPlayGamesButtonClicked() {
+        if(displayName == null) {
+            LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
+            View promptView = layoutInflater.inflate(R.layout.prompt, null);
+            AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this);
+            alertdialog.setView(promptView);
+            alertdialog.setCancelable(false)
+                    .setPositiveButton("Sign In", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            startActivityForResult(signInClient.getSignInIntent(), RC_SIGN_IN);
+                        }
+                    })
+                    .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // do nothing
+                        }
+                    });
+            alertdialog.create();
+            TextView googleloginstatus = (TextView) promptView.findViewById(R.id.googleloginstatus);
+            googleloginstatus.setText("You are not signed in.");
+            alertdialog.show();
+        }
+        else {
+            LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
+            View promptView = layoutInflater.inflate(R.layout.prompt, null);
+            AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this);
+            alertdialog.setView(promptView);
+            alertdialog.setCancelable(false)
+                    .setPositiveButton("Sign Out", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            signOut();
+                            displayName = null;
+                            Toast.makeText(MainActivity.this, "Successfully signed out", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // do nothing
+                        }
+                    });
+            alertdialog.create();
+            TextView googleloginstatus = (TextView) promptView.findViewById(R.id.googleloginstatus);
+            googleloginstatus.setText("You are signed in as " + displayName + ".");
+            alertdialog.show();
+        }
+    }
+
+    public void buttonPressed(View view) {
+        switch (view.getId()) {
+            case R.id.buttonPlay:
+                Intent playIntent = new Intent(this, GameActivity.class);
+                startActivity(playIntent);
+                break;
+            /*
+            case R.id.buttonGoogleIn:
+                startActivityForResult(signInClient.getSignInIntent(), RC_SIGN_IN);
+                break;
+            case R.id.buttonGoogleOut:
+                signOut();
+                break;
+             */
+            case R.id.buttonLeaderboard:
+                System.out.println("Test12334");
+                onShowLeaderboardsRequested();
+                break;
+        }
+    }
+/*
+    public void getLeaderboardClient() {
+        System.out.println(leaderboardsClient);
+    }
+
+    public void click(View view) {
+        System.out.println("test123");
+    }
+
+    public void signIn (View view)
+*/
+    private boolean isSignedIn() {
+        return GoogleSignIn.getLastSignedInAccount(this) != null;
+    }
+
+    private void signInSilently() {
+        Log.d(TAG, "signedInSilently()");
+
+        signInClient.silentSignIn().addOnCompleteListener(this,
+                new OnCompleteListener<GoogleSignInAccount>() {
+                    @Override
+                    public void onComplete(Task<GoogleSignInAccount> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "signInSilently(): success");
+                            onConnected(task.getResult());
+                        } else {
+                            Log.d(TAG, "signInSilently(): failure", task.getException());
+                            onDisconnected();
+                        }
+                    }
+                });
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume()");
+
+        signInSilently();
+        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(listener);
+        checkMusicAndPlay();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(listener);
+        mp.pause();
     }
 
 
     @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        if (sketch != null) {
-            sketch.onNewIntent(intent);
+    protected void onDestroy() {
+        mp.release();
+        AppDatabase.destroyInstance();
+        super.onDestroy();
+    }
+
+    private void signOut() {
+
+        if (!isSignedIn()) {
+            return;
+        }
+
+        signInClient.signOut().addOnCompleteListener(this,
+                new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(Task<Void> task) {
+                        boolean successful = task.isSuccessful();
+                        Log.d("TAG","signOut(): " + (successful ? "success" : "failed"));
+                        if (successful) {
+                            onDisconnected();
+                        }
+                    }
+                });
+    }
+
+    public void onShowAchievementsRequested() {
+        achievementsClient.getAchievementsIntent()
+                .addOnSuccessListener(new OnSuccessListener<Intent>() {
+                    @Override
+                    public void onSuccess(Intent intent) {
+                        startActivityForResult(intent, RC_UNUSED);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.d(TAG, e.getMessage());
+                    }
+                });
+    }
+
+    public void onShowLeaderboardsRequested() {
+        leaderboardsClient.getAllLeaderboardsIntent()
+                .addOnSuccessListener(new OnSuccessListener<Intent>() {
+                    @Override
+                    public void onSuccess(Intent intent) {
+                        startActivityForResult(intent, RC_UNUSED);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.d(TAG, e.getMessage());
+                    }
+                });
+    }
+
+    public void pushAccomplishments() {
+        if (!isSignedIn()) {
+            return;
+        }
+
+        if (outbox.easyModeScore >= 0) {
+            leaderboardsClient.submitScore(getString(R.string.leaderboard_easy_id),
+            outbox.easyModeScore);
+            outbox.easyModeScore = -1;
+        }
+        if (outbox.firstPoint) {
+            achievementsClient.unlock(getString(R.string.first_point));
+            outbox.firstPoint = false;
+        }
+        if (outbox.goodStart) {
+            achievementsClient.unlock(getString(R.string.good_start));
+            outbox.goodStart = false;
+        }
+        if (outbox.longerBetter) {
+            achievementsClient.unlock(getString(R.string.longer_better));
+            outbox.longerBetter = false;
+        }
+        if (outbox.longRun > 0) {
+            achievementsClient.increment(getString(R.string.long_run),
+                    outbox.longRun);
+            outbox.longRun = 0;
+        }
+    }
+
+
+    private void updateLeaderboard(int finalScore) {
+        if (outbox.easyModeScore < finalScore) {
+            outbox.easyModeScore = finalScore;
+        }
+    }
+
+    private void checkForAchievements(int score) {
+        if (score >= 1) {
+            outbox.firstPoint = true;
+        }
+        if (score == 25) {
+            outbox.longerBetter = true;
+        }
+        outbox.longRun++;
+        outbox.goodStart = true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+        if (requestCode == RC_SIGN_IN) {
+            Task<GoogleSignInAccount> task =
+                    GoogleSignIn.getSignedInAccountFromIntent(intent);
+
+            try {
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                onConnected(account);
+
+            } catch (ApiException apiException) {
+                String msg = apiException.getMessage();
+                if (msg != null ||msg.isEmpty()) {
+                    msg = getString(R.string.signInError);
+                }
+
+                onDisconnected();
+
+                new AlertDialog.Builder(this)
+                        .setMessage(msg)
+                        .setNeutralButton(android.R.string.ok, null)
+                        .show();
+            }
+        }
+
+    }
+    private void onConnected(GoogleSignInAccount googleSignInAccount) {
+        Log.d("SNAKE", "onConnected(): connected to Google APIs");
+
+        achievementsClient = Games.getAchievementsClient(this, googleSignInAccount);
+        leaderboardsClient = Games.getLeaderboardsClient(this, googleSignInAccount);
+        playersClient = Games.getPlayersClient(this, googleSignInAccount);
+
+        mainMenuFragment.updateButtons(true);
+
+        playersClient.getCurrentPlayer()
+                .addOnCompleteListener(new OnCompleteListener<Player>() {
+                    @Override
+                    public void onComplete(Task<Player> task) {
+                        if (task.isSuccessful()) {
+                            displayName = task.getResult().getDisplayName();
+                            String welcomeText = "Welcome:" + displayName;
+                            Toast.makeText(getApplicationContext(), welcomeText, Toast.LENGTH_LONG).show();
+                        } else {
+                            Exception e = task.getException();
+                            displayName = "???";
+                        }
+                    }
+                });
+
+        if (!outbox.isEmpty()) {
+            pushAccomplishments();
+            Toast.makeText(this, "Your progress will be uploades", Toast.LENGTH_LONG).show();
+        }
+
+    }
+
+    private void onDisconnected() {
+        Log.d("Snake", "onDisconnected()");
+
+        achievementsClient = null;
+        leaderboardsClient = null;
+        playersClient = null;
+
+        mainMenuFragment.updateButtons(false);
+    }
+
+    @Override
+    public void onEndedGameScore(int score) {
+
+        checkForAchievements(score);
+
+        updateLeaderboard(score);
+
+        pushAccomplishments();
+
+        updateLocalStats(score);
+    }
+
+    //Todo: int itemsPickedUp, int obstaclesDestroyed einfügen
+    public void updateLocalStats(int score) {
+        Stats stats = database.statsDao().getStats();
+        if (stats != null) {
+            database.statsDao().updateStats(score > stats.highestScore ? score : stats.highestScore, stats.totalScore + score, ++stats.totalDeaths, stats.id);
+        } else {
+            Stats insertedStats = new Stats(score, score, 1);
+            database.statsDao().addStats(insertedStats);
+        }
+
+    }
+
+    private class AccomplishmentsOutbox {
+        boolean firstPoint = false;
+        boolean goodStart = false;
+        boolean longerBetter = false;
+        boolean unlimitedPower = false;
+        boolean wasThereAnything = false;
+
+        int longRun = 0;
+
+        int easyModeScore = -1;
+        int hardModeScore = -1;
+
+        boolean isEmpty() {
+            return easyModeScore < 0 && hardModeScore < 0
+                    && firstPoint == false && goodStart == false && longerBetter == false
+                    && unlimitedPower == false && wasThereAnything == false && longRun == 0;
         }
     }
 }

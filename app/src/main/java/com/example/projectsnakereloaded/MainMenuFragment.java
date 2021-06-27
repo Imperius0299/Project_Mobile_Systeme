@@ -27,6 +27,8 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
 
         void onSettingsButtonClicked();
 
+        void onPlayerstatsButtonClicked();
+
         // TODO: Add Stats Button
     }
 
@@ -78,6 +80,9 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
                 break;
             case R.id.buttonAchievements:
                 listener.onShowAchievementsRequested();
+                break;
+            case R.id.buttonPlayerStats:
+                listener.onPlayerstatsButtonClicked();
                 break;
             case R.id.buttonPlay:
                 listener.onPlayButtonClicked();

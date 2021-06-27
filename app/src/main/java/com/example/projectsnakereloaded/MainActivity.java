@@ -207,6 +207,40 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void onPlayerstatsButtonClicked() {
+        LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
+        View playerstatsView = layoutInflater.inflate(R.layout.playerstats, null);
+        AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this);
+        alertdialog.setView(playerstatsView);
+        alertdialog.setCancelable(false)
+                .setNegativeButton("Close", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //close
+                    }
+                });
+        alertdialog.create();
+        String highestScore = "Test highestScore";
+        String totalScore = "Test totalScore";
+        String totalDeaths = "Test totalDeaths";
+        String totalFieldsMoved = "Test totalFieldsMoved";
+        String totalItemsPickedUp = "Test totalItemsPickedUp";
+
+        TextView highestScoreTextView = (TextView) playerstatsView.findViewById(R.id.highestScore);
+        highestScoreTextView.setText(highestScore);
+        TextView totalScoreTextView = (TextView) playerstatsView.findViewById(R.id.totalScore);
+        totalScoreTextView.setText(totalScore);
+        TextView totalDeathsTextView = (TextView) playerstatsView.findViewById(R.id.totalDeaths);
+        totalDeathsTextView.setText(totalDeaths);
+        TextView totalFieldsMovedTextView = (TextView) playerstatsView.findViewById(R.id.totalFieldsMoved);
+        totalFieldsMovedTextView.setText(totalFieldsMoved);
+        TextView totalItemsPickedUpTextView = (TextView) playerstatsView.findViewById(R.id.totalItemsPickedUp);
+        totalItemsPickedUpTextView.setText(totalItemsPickedUp);
+
+        alertdialog.show();
+    }
+
+    @Override
     public void onPlayGamesButtonClicked() {
         if(displayName == null) {
             LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);

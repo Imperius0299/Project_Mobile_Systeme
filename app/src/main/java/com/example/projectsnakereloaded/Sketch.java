@@ -101,7 +101,7 @@ public class Sketch extends PApplet {
         obstacleImage = loadImage("snake_brick.png");
         foodImage = loadImage("snake_apple.png");
         snakeImage = loadImage("snake_block.png");
-        backgroundImage = loadImage("background_image.png");
+        backgroundImage = loadImage("background_image_stone.png");
         gameoverImage = loadImage("gameover_background.png");
 
         System.out.println(dataPath(""));
@@ -359,7 +359,7 @@ public class Sketch extends PApplet {
         tSizeHelper = (min(displayHeight, displayWidth)/25);
         textSize(tSizeHelper);
 
-        float scoreCoordinateX = (float) (width/7.5);
+        float scoreCoordinateX = width/2;
         float scoreCoordinateY = height/60;
 
         fill(0,0,0);

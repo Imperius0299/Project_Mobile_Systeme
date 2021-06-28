@@ -249,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements
         if(displayName == null) {
             LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
             View promptView = layoutInflater.inflate(R.layout.prompt, null);
-            AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this);
+            AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this, R.style.MyTheme);
             alertdialog.setView(promptView);
             alertdialog.setCancelable(false)
                     .setPositiveButton("Sign In", new DialogInterface.OnClickListener() {
@@ -272,7 +272,7 @@ public class MainActivity extends AppCompatActivity implements
         else {
             LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
             View promptView = layoutInflater.inflate(R.layout.prompt, null);
-            AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this);
+            AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this, R.style.MyTheme);
             alertdialog.setView(promptView);
             alertdialog.setCancelable(false)
                     .setPositiveButton("Sign Out", new DialogInterface.OnClickListener() {

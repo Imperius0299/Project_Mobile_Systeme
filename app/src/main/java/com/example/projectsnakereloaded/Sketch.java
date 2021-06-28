@@ -154,7 +154,7 @@ public class Sketch extends PApplet {
     }
 
     public void playSound(int rawId) {
-        mp = MediaPlayer.create((MainActivity)getActivity(), R.raw.apfelsound_badum);
+        mp = MediaPlayer.create((MainActivity)getActivity(), rawId);
         mp.start();
 
     }
@@ -430,7 +430,7 @@ public class Sketch extends PApplet {
             callback.onEndedGameScore(finalScore);
             //callback.
 
-            ((MainActivity)getActivity()).playDeathsound();
+            playSound(R.raw.tot_dum_dum_dum);
 
             scale(1/rez);
             gameoverImage.resize(width, height);

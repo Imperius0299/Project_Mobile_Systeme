@@ -9,4 +9,7 @@ public class PowerStar extends Item{
         super(x, y, image);
     }
 
+    public boolean getEmpowered() {
+        return true;
+    }
 }

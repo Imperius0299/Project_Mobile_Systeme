@@ -4,18 +4,18 @@ import processing.core.PImage;
 
 public class SpeedBoost extends Item{
 
-    private int speedBoost;
+    private double speedBoost;
 
     public SpeedBoost(int x, int y, PImage image) {
         super(x, y, image);
-        speedBoost = 3;
+        speedBoost = -1;
     }
 
-    public void setSpeedBoost(int speedBoost) {
-        this.speedBoost = speedBoost;
-    }
-
-    public int getSpeedBoost() {
+    public double getSpeedBoost() {
         return speedBoost;
+    }
+
+    public void setSpeedBoost(double speedBoost) {
+        this.speedBoost = speedBoost;
     }
 }

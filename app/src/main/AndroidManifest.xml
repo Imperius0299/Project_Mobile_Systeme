@@ -12,7 +12,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ProjectSnakeReloaded">
-        <activity android:name=".GameActivity" />
 
         <meta-data
             android:name="com.google.android.gms.games.APP_ID"

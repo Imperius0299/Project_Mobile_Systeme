@@ -6,18 +6,37 @@ import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PVector;
 
+/** Represents the Snake in the Sketch.
+ * @author Alexander Storbeck
+ * @author Luca Jetter
+ */
 public class Snake {
 
     private ArrayList<PVector> body;
     private PVector dir;
+
+    private int w;
+    private int h;
+
     private int len;
-    private boolean isEmpowered;
+    private int fieldsMoved;
+    private int itemsCollected;
     private double speedDifference;
+
+    private boolean isEmpowered;
+    private boolean isTeleportEmpowered;
     private boolean isSpeedAffected;
 
 
+    /** Creates a Snake at a specific position. This Position is the Middle of the Sketch.
+     *
+     * @param width The width of the Sketch.
+     * @param height The height of the Sketch.
+     */
     public Snake(int width, int height) {
         body = new ArrayList();
+        this.w = width;
+        this.h = height;
         body.add(new PVector(width / 2 , height / 2));
         dir = new PVector(0,0);
         len = 0;
@@ -25,26 +44,45 @@ public class Snake {
         isSpeedAffected = false;
     }
 
+    /** Sets the Direction of the Snake.
+     *
+     * @param x The horizontal Direction in the coordinate System.
+     * @param y The vertical Direction in the coordinate System.
+     */
     public void setDir(int x, int y) {
         dir.x = x;
         dir.y = y;
     }
 
-    public void move(int speed) {
+    /**
+     * Moves the different body Parts of the Snake, depending on the direction.
+     */
+    public void move() {
         PVector head = body.get(body.size()-1).copy();
         body.remove(0);
         body.trimToSize();
         head.x += dir.x;
         head.y += dir.y;
         body.add(head);
+        if (dir.x != 0 || dir.y != 0) {
+            fieldsMoved++;
+        }
     }
 
+    /**
+     * Adds a new body part to the snake.
+     */
     public void grow() {
         PVector head = body.get(body.size()-1).copy();
         len++;
         body.add(head);
     }
 
+    /**
+     * Detection if the snakes head is on the same position as an food tile.
+     * @param posFood the position coordinates of the food tile.
+     * @return The boolean if the snake collide with an Apple or not.
+     */
     public boolean eat(PVector posFood) {
         PVector head = body.get(body.size()-1).copy();
 
@@ -55,19 +93,30 @@ public class Snake {
         return false;
     }
 
+    /**
+     * Detection if the snakes head is on the same position as an item tile.
+     * @param itemList The actual list of items
+     * @return A boolean if the snakes collide with an item
+     */
     public boolean collectItem(ArrayList<Item> itemList) {
         PVector head = body.get(body.size() - 1).copy();
 
         for (Item item : itemList) {
             if (head.x == item.getPos().x && head.y == item.getPos().y) {
-                getItemPower(item);
+                setItemPower(item);
                 itemList.remove(item);
+                itemsCollected++;
                 return true;
             }
         }
         return false;
     }
-    public void getItemPower(Item item) {
+
+    /**
+     * Sets the power of the collected item.
+     * @param item The Item that the snake collected.
+     */
+    public void setItemPower(Item item) {
         if (item.getClass() == SpeedBoost.class && !isSpeedAffected) {
             speedDifference = ((SpeedBoost) item).getSpeedBoost();
             isSpeedAffected = true;
@@ -79,9 +128,15 @@ public class Snake {
         if (item.getClass() == PowerStar.class) {
             isEmpowered = ((PowerStar) item).getEmpowered();
         }
+        if (item.getClass() == Teleport.class) {
+            isTeleportEmpowered = ((Teleport) item).getTeleportEmpowered();
+        }
     }
-    //Todo: teleport Symbol
-    public void teleport(int w, int h) {
+
+    /**
+     * Teleport's the snake to the opposite position, when hitting the edges.
+     */
+    public void teleport() {
         PVector head = body.get(body.size() - 1);
 
         if (head.x < 0){
@@ -102,6 +157,9 @@ public class Snake {
         }
     }
 
+    /**
+     * Resets the Snake's Item Power State.
+     */
     public void resetItemPower() {
         if (isSpeedAffected) {
             isSpeedAffected = false;
@@ -109,39 +167,91 @@ public class Snake {
         if (isEmpowered) {
             isEmpowered = false;
         }
+        if (isTeleportEmpowered) {
+            isTeleportEmpowered = false;
+        }
     }
 
+    /**
+     * Resets the Speed Difference of the Snake.
+     */
+    public void resetSpeedDifference() {
+        speedDifference = 0;
+    }
+
+    /**
+     * Shows the Snake's body tiles with the proposed image.
+     * @param pApplet The sketch where to show the image.
+     * @param image The image for the Snake.
+     */
     public void show(PApplet pApplet, PImage image) {
         for (int i = 0; i< body.size(); i++) {
             pApplet.image(image, body.get(i).x, body.get(i).y, 1, 1);
         }
     }
 
+    /**
+     * Get's the Head Position of the Snake.
+     * @return A PVector with the coordinates of the head.
+     */
     public PVector getHeadVect() {
         return body.get(body.size()-1);
     }
 
+    /**
+     * Get's the length of the snake.
+     * @return An int representing the length.
+     */
     public int getLen() {
         return len;
     }
 
+    /**
+     * Get's the body of the snake.
+     * @return A ArrayList with the body Elements of the snake.
+     */
     public ArrayList<PVector> getBody() {
         return body;
     }
 
+    /**
+     * Get's the actual direction of the snake.
+     * @return A PVector holding the direction coordinates.
+     */
     public PVector getDir() {
         return dir;
     }
 
+    /**
+     * Get's the empowered state of the snake.
+     * @return A boolean if the snake is empowered.
+     */
     public boolean getEmpoweredState() {
         return isEmpowered;
     }
 
+    /**
+     * Get's the teleported empowered state.
+     * @return A boolean if the snake is teleported empowered.
+     */
+    public boolean getTeleportedEmpoweredState() {
+        return isTeleportEmpowered;
+    }
+
+    /**
+     * Get's the speed difference of the snake.
+     * @return A int representing the actual speed difference.
+     */
     public double getSpeedDifference() {
         return speedDifference;
     }
 
-    public void resetSpeedDifference() {
-        speedDifference = 0;
+    public int getFieldsMoved() {
+        return fieldsMoved;
     }
+
+    public int getItemsCollected() {
+        return itemsCollected;
+    }
+
 }

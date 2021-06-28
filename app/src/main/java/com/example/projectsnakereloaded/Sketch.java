@@ -1,10 +1,11 @@
 package com.example.projectsnakereloaded;
 
-import android.app.Activity;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.util.Log;
 
-import java.io.IOException;
+import androidx.preference.PreferenceManager;
+
 import java.util.ArrayList;
 
 
@@ -12,7 +13,6 @@ import processing.core.PApplet;
 import processing.core.PFont;
 import processing.core.PImage;
 import processing.core.PVector;
-import processing.sound.SoundFile;
 
 
 public class Sketch extends PApplet {
@@ -24,8 +24,6 @@ public class Sketch extends PApplet {
     private ArrayList<Obstacle> obstaclaList;
     private ArrayList<Item> itemList;
 
-    private int width;
-    private int height;
 
     private float rez;
     private int w;
@@ -37,11 +35,6 @@ public class Sketch extends PApplet {
 
     private static final String TAG = "Snake";
 
-    /*
-    private int randomPosX;
-    private int randomPosY;
-    */
-
     private PVector pA;
     private PVector pB;
     private PVector pC;
@@ -49,9 +42,10 @@ public class Sketch extends PApplet {
     private PVector pM;
 
     private int finalScore;
+    private boolean wallHit;
 
     interface Callback {
-        void onEndedGameScore(int score);
+        void onEndedGameScore(int score, int itemsPickedUp, int fieldsMoved, boolean wallHit);
     }
 
     private Callback callback = null;
@@ -64,17 +58,18 @@ public class Sketch extends PApplet {
     PImage itemSpeedBoostImage;
     PImage itemSpeedLossImage;
     PImage itemPowerStarImage;
+    PImage itemTeleportImage;
+
     PFont Font;
 
     //Sound
     MediaPlayer mp;
 
+    SharedPreferences prefs;
+
 // https://stackoverflow.com/questions/18459122/play-sound-on-button-click-android
 
-    public Sketch(int width, int height) {
-        this.width = width;
-        this.height = height;
-    }
+
     @Override
     public void settings() {
         fullScreen();
@@ -88,33 +83,55 @@ public class Sketch extends PApplet {
     }
 
 
-    //Sound sound;
-    //SoundFile soundFile;
 
     @Override
     public void setup() {
-        //soundFile = new SoundFile(this, "apfelsound_badum.mp3");
+
+        prefs = PreferenceManager.getDefaultSharedPreferences((MainActivity)getActivity());
+        String difficulty = prefs.getString("difficulty_key", "easy");
+        String obst = prefs.getString("list_food_type", "apple");
+        String bgImage = prefs.getString("background_key", "wall");
+
+        if(obst.equals("peach")){
+            foodImage = loadImage("snake_peach.png");
+        }
+        else if(obst.equals("lemon")){
+            foodImage = loadImage("snake_lemon.png");
+        }
+        else {
+            foodImage = loadImage("snake_apple.png");
+        }
+
+        if (bgImage.equals("beach")) {
+            backgroundImage = loadImage("background_image.png");
+        }
+        else {
+            backgroundImage = loadImage("background_image_stone.png");
+        }
+
+
+        if(difficulty.equals("hard")){
+            rez = 100;
+        }
+        else if (difficulty.equals("medium")) {
+            rez = 80;
+        }
+        else {
+            rez = 60;
+        }
 
 
 
         // Quelle für png https://github.com/rembound/Snake-Game-HTML5
         //String url = "https://raw.githubusercontent.com/rembound/Snake-Game-HTML5/master/snake-graphics.png";
         obstacleImage = loadImage("snake_brick.png");
-        foodImage = loadImage("snake_apple.png");
-        snakeImage = loadImage("snake_block.png");
-        backgroundImage = loadImage("background_image_stone.png");
+        snakeImage = loadImage("snake_block_default.png");
         gameoverImage = loadImage("gameover_background.png");
         itemSpeedBoostImage = loadImage("item_speedup.png");
         itemSpeedLossImage = loadImage("item_speeddown.png");
         itemPowerStarImage = loadImage("item_stern.png");
+        itemTeleportImage = loadImage("item_teleporter.png");
 
-
-        System.out.println(dataPath(""));
-        //foodImage = loadImage();
-        //image(testImage, 0, 0, 320, 320, 0, 0 ,64 ,64);
-        //createImage()
-
-        rez = 60;
         w = floor(width / rez);
         h = floor(height / rez);
         frameRate(10);
@@ -148,19 +165,16 @@ public class Sketch extends PApplet {
         textFont(font);
         textAlign(CENTER, CENTER);
 
-        //Sound
-        //mp = new MediaPlayer();
 
     }
 
     public void playSound(int rawId) {
-        mp = MediaPlayer.create((MainActivity)getActivity(), R.raw.apfelsound_badum);
+        mp = MediaPlayer.create((MainActivity)getActivity(), rawId);
         mp.start();
-
     }
 
     public void createFood() {
-        food = new PVector((int) random(w), (int) random(h));
+        food = getPosAvailable();
     }
 
 
@@ -199,8 +213,6 @@ public class Sketch extends PApplet {
 
     @Override
     public void mousePressed() {
-        PVector snakeHead = snake.getHeadVect();
-        PVector dir = snake.getDir();
 
         float mouseXRez =  (mouseX / rez);
         float mouseYRez =  (mouseY / rez);
@@ -258,21 +270,6 @@ public class Sketch extends PApplet {
     }
 
     @Override
-    public void touchStarted() {
-        super.touchStarted();
-    }
-
-    @Override
-    public void touchMoved() {
-        super.touchMoved();
-    }
-
-    @Override
-    public void touchEnded() {
-        super.touchEnded();
-    }
-
-    @Override
     public void keyPressed() {
         if (key == CODED && (frameCount % 1 == 0)) {
             switch (keyCode) {
@@ -304,9 +301,28 @@ public class Sketch extends PApplet {
         }
     }
 
-    @Override
-    public Activity getActivity() {
-        return super.getActivity();
+    public PVector getPosAvailable() {
+        PVector randomVector = new PVector((int) random(w), (int) random(h));
+
+        for (Obstacle obstacle : obstaclaList) {
+            if (obstacle.getPos().x == randomVector.x && obstacle.getPos().y == randomVector.y) {
+                randomVector = getPosAvailable();
+                break;
+            }
+        }
+        for (Item item : itemList) {
+            if (item.getPos().x == randomVector.x && item.getPos().y == randomVector.y) {
+                randomVector = getPosAvailable();
+                break;
+            }
+        }
+        if (food != null) {
+            if (food.x == randomVector.x && food.y == randomVector.y) {
+                randomVector = getPosAvailable();
+            }
+        }
+
+        return randomVector;
     }
 
     @Override
@@ -331,10 +347,13 @@ public class Sketch extends PApplet {
         text("Score: "+snake.getLen(), scoreCoordinateX, (float) (scoreCoordinateY+Math.cbrt(scoreCoordinateX/2)));
         text("Score: "+snake.getLen(), scoreCoordinateX, (float) (scoreCoordinateY-Math.cbrt(scoreCoordinateX/2)));
 
+        //Todo : delete frameRate
         fill(255,255,255);
-        text("Score: "+snake.getLen(), scoreCoordinateX, scoreCoordinateY);
+        text("Score: "+snake.getLen() + ": " + frameRate, scoreCoordinateX, scoreCoordinateY);
+
 
         scale(rez);
+
 
         //Todo: Testen wegen slow Down Speed Up
         //createFood();
@@ -350,16 +369,20 @@ public class Sketch extends PApplet {
 
                 if (snake.collectItem(itemList)) {
                     //Todo: Implement Feature Sound
+                    snakeImage = loadImage("snake_block_item.png");
                     itemActiveFrameCount = frameCount + itemActiveFrameTime;
                     framecountDivider += snake.getSpeedDifference();
-                    snake.resetSpeedDifference();
+                    if (snake.getSpeedDifference() != 0) {
+                        snake.resetSpeedDifference();
+                    }
                 }
-                snake.move((int) rez);
+                snake.move();
             }
 
             if (frameCount == itemActiveFrameCount){
                 framecountDivider = 2;
                 snake.resetItemPower();
+                snakeImage = loadImage("snake_block_default.png");
             }
 
 
@@ -370,26 +393,33 @@ public class Sketch extends PApplet {
             if (frameCount % 2 == 0) {
                 if ((snake.getDir().x != 0 || snake.getDir().y != 0)){
                     if (frameCount % 30 == 0) {
-                        int randomPosX = (int) random(w);
-                        int randomPosY = (int) random(h);
-                        obstaclaList.add(new Obstacle(randomPosX, randomPosY));
+                        PVector posAvailable = getPosAvailable();
+                        int posX = (int) posAvailable.x;
+                        int posY = (int) posAvailable.y;
+                        obstaclaList.add(new Obstacle(posX, posY, obstacleImage));
                     }
                     if (frameCount % 60 == 0) {
-                        int randomItem = (int) random(0, 3);
+                        int randomItem = (int) random(0, 4);
 
-                        int randomPosX = (int) random(w);
-                        int randomPosY = (int) random(h);
+                        PVector posAvailable = getPosAvailable();
+
+                        int posX = (int) posAvailable.x;
+                        int posY = (int) posAvailable.y;
+
+
 
                         switch (randomItem) {
                             case 0:
-                                itemList.add(new SpeedBoost(randomPosX, randomPosY, itemSpeedBoostImage));
+                                itemList.add(new SpeedBoost(posX, posY, itemSpeedBoostImage));
                                 break;
                             case 1:
-                                itemList.add(new SpeedLoss(randomPosX, randomPosY, itemSpeedLossImage));
+                                itemList.add(new SpeedLoss(posX, posY, itemSpeedLossImage));
                                 break;
                             case 2:
-                                itemList.add(new PowerStar(randomPosX, randomPosY, itemPowerStarImage));
+                                itemList.add(new PowerStar(posX, posY, itemPowerStarImage));
                                 break;
+                            case 3:
+                                itemList.add(new Teleport(posX, posY, itemTeleportImage));
                         }
                     }
                     if (frameCount % 90 == 0) {
@@ -403,7 +433,7 @@ public class Sketch extends PApplet {
 
 
                 for (Obstacle obstacle : obstaclaList) {
-                    obstacle.show(this, obstacleImage);
+                    obstacle.show(this);
 
                 }
 
@@ -419,17 +449,13 @@ public class Sketch extends PApplet {
 
 
 
-
         }else {
-            //TODO: Loop unterbrechen, damit nicht immer abgeschickt
-            //looping = !looping;
             noLoop();
             finalScore = snake.getLen();
-            callback.onEndedGameScore(finalScore);
-            //callback.
+            callback.onEndedGameScore(finalScore, snake.getItemsCollected(), snake.getFieldsMoved(), wallHit);
 
-            ((MainActivity)getActivity()).playDeathsound();
 
+            playSound(R.raw.tot_dum_dum_dum);
             scale(1/rez);
             gameoverImage.resize(width, height);
             image(gameoverImage, 0, 0);
@@ -456,8 +482,8 @@ public class Sketch extends PApplet {
         PVector snakeHead = snake.getHeadVect();
         ArrayList<PVector> snakeBody = snake.getBody();
         if (snakeHead.x < 0 || snakeHead.x > w - 1 || snakeHead.y < 0 || snakeHead.y > h - 1){
-            if (snake.getEmpoweredState()) {
-                snake.teleport(w, h);
+            if (snake.getTeleportedEmpoweredState()) {
+                snake.teleport();
                 return;
             }
             gameover = true;
@@ -466,8 +492,10 @@ public class Sketch extends PApplet {
             if (snakeHead.x == obstacle.getPos().x && snakeHead.y == obstacle.getPos().y) {
                 if (snake.getEmpoweredState()) {
                     obstaclaList.remove(obstacle);
+                    obstaclaList.trimToSize();
                     // Todo : nur einmal oder x frames?
-                    snake.resetItemPower();
+                    //snake.resetItemPower();
+                    wallHit = true;
                     return;
                 }
                 gameover = true;

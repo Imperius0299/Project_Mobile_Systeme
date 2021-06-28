@@ -9,6 +9,18 @@
             android:entryValues="@array/food_values"
             android:key="list_food_type"
             android:title="@string/food_type" />
+        <ListPreference
+            android:defaultValue="1"
+            android:entries="@array/background_entries"
+            android:entryValues="@array/background_values"
+            android:key="background_key"
+            android:title="Change background design" />
+        <ListPreference
+            android:defaultValue="1"
+            android:entries="@array/difficulty_entries"
+            android:entryValues="@array/difficulty_values"
+            android:key="difficulty_key"
+            android:title="Change difficulty" />
 
     </PreferenceCategory>
 
@@ -21,13 +33,6 @@
         <SwitchPreferenceCompat
             app:key="sound_effects"
             app:title="@string/effects_title" />
-
-        <SwitchPreferenceCompat
-            app:dependency="music"
-            app:key="volume"
-            app:summaryOff="@string/attachment_summary_off"
-            app:summaryOn="@string/attachment_summary_on"
-            app:title="@string/music_volume" />
 
     </PreferenceCategory>
 

@@ -13,9 +13,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+/**
+ * Represents the Main Menu of the Game
+ */
 public class MainMenuFragment extends Fragment implements View.OnClickListener {
 
-
+    /**
+     * The Interface for listening to the Button clicks.
+     */
     interface Listener {
         void onShowAchievementsRequested();
 
@@ -29,7 +34,6 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
 
         void onPlayerstatsButtonClicked();
 
-        // TODO: Add Stats Button
     }
 
     private Listener listener = null;
@@ -37,7 +41,7 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
     private ImageButton buttonAchievements;
     private ImageButton buttonLeaderboard;
 
-
+    
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 

@@ -17,7 +17,8 @@ public interface StatsDao {
     @Query("select * from stats")
     Stats getStats();
 
-    @Query("Update stats set highestScore =:highestScore, totalScore = :totalScore, totalDeaths= :totalDeaths where id = :id")
-    void updateStats(int highestScore, int totalScore, int totalDeaths, long id);
+    @Query("Update stats set highestScore =:highestScore, totalScore = :totalScore, totalDeaths= :totalDeaths, " +
+            "totalItemsPickedUp = :totalItemsPickedUp, totalFieldsMoved = :totalFieldsMoved where id = :id")
+    void updateStats(int highestScore, int totalScore, int totalDeaths, int totalItemsPickedUp, int totalFieldsMoved, long id);
 
 }

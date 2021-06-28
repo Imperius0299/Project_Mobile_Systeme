@@ -1,13 +1,11 @@
 package com.example.projectsnakereloaded;
 
-import android.app.Activity;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 
@@ -15,7 +13,6 @@ import processing.core.PApplet;
 import processing.core.PFont;
 import processing.core.PImage;
 import processing.core.PVector;
-import processing.sound.SoundFile;
 
 
 public class Sketch extends PApplet {
@@ -27,8 +24,6 @@ public class Sketch extends PApplet {
     private ArrayList<Obstacle> obstaclaList;
     private ArrayList<Item> itemList;
 
-    private int width;
-    private int height;
 
     private float rez;
     private int w;
@@ -40,11 +35,6 @@ public class Sketch extends PApplet {
 
     private static final String TAG = "Snake";
 
-    /*
-    private int randomPosX;
-    private int randomPosY;
-    */
-
     private PVector pA;
     private PVector pB;
     private PVector pC;
@@ -52,9 +42,10 @@ public class Sketch extends PApplet {
     private PVector pM;
 
     private int finalScore;
+    private boolean wallHit;
 
     interface Callback {
-        void onEndedGameScore(int score);
+        void onEndedGameScore(int score, int itemsPickedUp, int fieldsMoved, boolean wallHit);
     }
 
     private Callback callback = null;
@@ -78,10 +69,7 @@ public class Sketch extends PApplet {
 
 // https://stackoverflow.com/questions/18459122/play-sound-on-button-click-android
 
-    public Sketch(int width, int height) {
-        this.width = width;
-        this.height = height;
-    }
+
     @Override
     public void settings() {
         fullScreen();
@@ -95,16 +83,9 @@ public class Sketch extends PApplet {
     }
 
 
-    //Sound sound;
-    //SoundFile soundFile;
 
     @Override
     public void setup() {
-        //soundFile = new SoundFile(this, "apfelsound_badum.mp3");
-
-        //rez = 60;
-        //foodImage = loadImage("snake_apple.png");
-        //backgroundImage = loadImage("background_image_stone.png");
 
         prefs = PreferenceManager.getDefaultSharedPreferences((MainActivity)getActivity());
         String difficulty = prefs.getString("difficulty_key", "easy");
@@ -151,12 +132,6 @@ public class Sketch extends PApplet {
         itemPowerStarImage = loadImage("item_stern.png");
         itemTeleportImage = loadImage("item_teleporter.png");
 
-
-        System.out.println(dataPath(""));
-        //foodImage = loadImage();
-        //image(testImage, 0, 0, 320, 320, 0, 0 ,64 ,64);
-        //createImage()
-
         w = floor(width / rez);
         h = floor(height / rez);
         frameRate(10);
@@ -190,22 +165,12 @@ public class Sketch extends PApplet {
         textFont(font);
         textAlign(CENTER, CENTER);
 
-        //Sound
-        //mp = new MediaPlayer();
 
     }
 
     public void playSound(int rawId) {
-       /* if (mp != null) {
-            if (mp.isPlaying()) {
-                mp.stop();
-                mp.release();
-                mp.release();
-            }
-        } */
         mp = MediaPlayer.create((MainActivity)getActivity(), rawId);
         mp.start();
-
     }
 
     public void createFood() {
@@ -248,8 +213,6 @@ public class Sketch extends PApplet {
 
     @Override
     public void mousePressed() {
-        PVector snakeHead = snake.getHeadVect();
-        PVector dir = snake.getDir();
 
         float mouseXRez =  (mouseX / rez);
         float mouseYRez =  (mouseY / rez);
@@ -307,21 +270,6 @@ public class Sketch extends PApplet {
     }
 
     @Override
-    public void touchStarted() {
-        super.touchStarted();
-    }
-
-    @Override
-    public void touchMoved() {
-        super.touchMoved();
-    }
-
-    @Override
-    public void touchEnded() {
-        super.touchEnded();
-    }
-
-    @Override
     public void keyPressed() {
         if (key == CODED && (frameCount % 1 == 0)) {
             switch (keyCode) {
@@ -351,11 +299,6 @@ public class Sketch extends PApplet {
                         break;
             }
         }
-    }
-
-    @Override
-    public Activity getActivity() {
-        return super.getActivity();
     }
 
     public PVector getPosAvailable() {
@@ -404,6 +347,7 @@ public class Sketch extends PApplet {
         text("Score: "+snake.getLen(), scoreCoordinateX, (float) (scoreCoordinateY+Math.cbrt(scoreCoordinateX/2)));
         text("Score: "+snake.getLen(), scoreCoordinateX, (float) (scoreCoordinateY-Math.cbrt(scoreCoordinateX/2)));
 
+        //Todo : delete frameRate
         fill(255,255,255);
         text("Score: "+snake.getLen() + ": " + frameRate, scoreCoordinateX, scoreCoordinateY);
 
@@ -432,7 +376,7 @@ public class Sketch extends PApplet {
                         snake.resetSpeedDifference();
                     }
                 }
-                snake.move((int) rez);
+                snake.move();
             }
 
             if (frameCount == itemActiveFrameCount){
@@ -452,7 +396,7 @@ public class Sketch extends PApplet {
                         PVector posAvailable = getPosAvailable();
                         int posX = (int) posAvailable.x;
                         int posY = (int) posAvailable.y;
-                        obstaclaList.add(new Obstacle(posX, posY));
+                        obstaclaList.add(new Obstacle(posX, posY, obstacleImage));
                     }
                     if (frameCount % 60 == 0) {
                         int randomItem = (int) random(0, 4);
@@ -489,7 +433,7 @@ public class Sketch extends PApplet {
 
 
                 for (Obstacle obstacle : obstaclaList) {
-                    obstacle.show(this, obstacleImage);
+                    obstacle.show(this);
 
                 }
 
@@ -506,12 +450,9 @@ public class Sketch extends PApplet {
 
 
         }else {
-            //TODO: Loop unterbrechen, damit nicht immer abgeschickt
-            //looping = !looping;
             noLoop();
             finalScore = snake.getLen();
-            callback.onEndedGameScore(finalScore);
-            //callback.
+            callback.onEndedGameScore(finalScore, snake.getItemsCollected(), snake.getFieldsMoved(), wallHit);
 
 
             playSound(R.raw.tot_dum_dum_dum);
@@ -542,7 +483,7 @@ public class Sketch extends PApplet {
         ArrayList<PVector> snakeBody = snake.getBody();
         if (snakeHead.x < 0 || snakeHead.x > w - 1 || snakeHead.y < 0 || snakeHead.y > h - 1){
             if (snake.getTeleportedEmpoweredState()) {
-                snake.teleport(w, h);
+                snake.teleport();
                 return;
             }
             gameover = true;
@@ -554,6 +495,7 @@ public class Sketch extends PApplet {
                     obstaclaList.trimToSize();
                     // Todo : nur einmal oder x frames?
                     //snake.resetItemPower();
+                    wallHit = true;
                     return;
                 }
                 gameover = true;

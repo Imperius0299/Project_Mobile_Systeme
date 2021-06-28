@@ -1,29 +1,21 @@
 package com.example.projectsnakereloaded;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
 
-import android.app.StatusBarManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
-import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,8 +23,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.SignInButton;
-import com.google.android.gms.common.api.Api;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.games.AchievementsClient;
 import com.google.android.gms.games.Games;
@@ -54,12 +44,9 @@ Superepic by Alexander Nakarada | https://www.serpentsoundstudios.com
 */
 public class MainActivity extends AppCompatActivity implements
         Sketch.Callback,
-        MainMenuFragment.Listener,
-        SettingsFragment.Callback{
+        MainMenuFragment.Listener{
 
     private GoogleSignInClient signInClient;
-
-    private ImageButton buttonLeaderboard;
 
     private AchievementsClient achievementsClient;
     private LeaderboardsClient leaderboardsClient;
@@ -67,27 +54,27 @@ public class MainActivity extends AppCompatActivity implements
 
     private String displayName;
 
-    private static final int RC_UNUSED = 5001;
-    private static final int RC_SIGN_IN = 9001;
-
-    private static final String TAG = "Snake";
-
-    //private ImageButton playGames_Button;
-
-    private final AccomplishmentsOutbox outbox = new AccomplishmentsOutbox();
-
-    private MainMenuFragment mainMenuFragment;
-    private PFragment pFragment;
-    private SettingsFragment settingsFragment;
-
     private Sketch sketch;
 
     private MediaPlayer mp;
 
     private AppDatabase database;
 
+    private MainMenuFragment mainMenuFragment;
+    private PFragment pFragment;
+    private SettingsFragment settingsFragment;
+
+    private  SharedPreferences.OnSharedPreferenceChangeListener listener;
+
+    private static final int RC_UNUSED = 5001;
+    private static final int RC_SIGN_IN = 9001;
+
+    private static final String TAG = "Snake";
     public static final String BACKSTACK_KEY = "myBackstack";
-    SharedPreferences.OnSharedPreferenceChangeListener listener;
+
+    private final AccomplishmentsOutbox outbox = new AccomplishmentsOutbox();
+
+
 
     //Window Fullscreen https://www.tutorialspoint.com/how-to-get-full-screen-activity-in-android
     @Override
@@ -121,53 +108,60 @@ public class MainActivity extends AppCompatActivity implements
         settingsFragment = new SettingsFragment();
 
         mainMenuFragment.setListener(this);
-        settingsFragment.setCallback(this);
 
         database = AppDatabase.getDatabase(this);
 
-        getSupportFragmentManager().beginTransaction().add(R.id.container,
-                mainMenuFragment).commit();
-
-
         mp = MediaPlayer.create(this, R.raw.loyalty_freak_music_everyone_is_so_alive);
         mp.setLooping(true);
+
 
         listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
                 if (key.equals("music")) {
-                    checkMusicAndPlay();
+                    checkMusicAndPlay(sharedPreferences);
                 }
             }
         };
 
-        //checkMusicAndPlay();
+        getSupportFragmentManager().beginTransaction().add(R.id.container,
+                mainMenuFragment).commit();
+    }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (sketch != null) {
+            sketch.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
 
-
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (sketch != null) {
+            sketch.onNewIntent(intent);
+        }
     }
 
 
     //Todo: Problem wenn Musik ausgeschaltet wird fixen
-    public void checkMusicAndPlay() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+    /**
+     * Checks the music setting and play or pause Music depending on the switch.
+     * @param sharedPreferences An instance of the shared preferences.
+     */
+    public void checkMusicAndPlay(SharedPreferences sharedPreferences) {
+        SharedPreferences prefs = sharedPreferences;
         if (prefs.getBoolean("music", true)) {
             mp.start();
+        } else {
+            if (!mp.isPlaying()) {
+                return;
+            }
+            mp.pause();
         }
     }
-
-    public void playApfelsound() {
-        mp = MediaPlayer.create(this, R.raw.apfelsound_badum);
-        mp.setLooping(false);
-        mp.start();
-    }
-
-    public void playDeathsound() {
-        mp = MediaPlayer.create(this, R.raw.tot_dum_dum_dum);
-        mp.setLooping(false);
-        mp.start();
-    }
-
 
 
     // TODO: Prüfen ob erweitern für Settingfragment backpressed / Toolbar hinzufügen?
@@ -180,70 +174,18 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Handler for replace and add Fragment to the Backstack.
+     * @param fragment The fragment which should be shown.
+     */
     private void switchToFragment(Fragment fragment) {
         getSupportFragmentManager().beginTransaction().replace(R.id.container,
                 fragment).addToBackStack(BACKSTACK_KEY).setReorderingAllowed(true).commit();
     }
 
-    @Override
-    public void onPlayButtonClicked() {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getRealMetrics(displayMetrics);
-        //getWindowManager().getMaximumWindowMetrics().
-        int height = displayMetrics.heightPixels;
-        int width = displayMetrics.widthPixels;
-
-        System.out.println(height + ":" + width);
-
-        sketch = new Sketch(width, height);
-        sketch.setCallback(this);
-        pFragment.setSketch(sketch);
-        switchToFragment(pFragment);
-    }
-
-    @Override
-    public void onSettingsButtonClicked() {
-        switchToFragment(settingsFragment);
-    }
-
-    @Override
-    public void onPlayerstatsButtonClicked() {
-        LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
-        View playerstatsView = layoutInflater.inflate(R.layout.playerstats, null);
-        AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this, R.style.AlertDialogTheme);
-        alertdialog.setView(playerstatsView)
-                .setCancelable(false)
-                .setNegativeButton("Close", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //close
-                    }
-                })
-                .create();
-
-        TextView highestScoreTextView = (TextView) playerstatsView.findViewById(R.id.highestScore);
-        TextView totalScoreTextView = (TextView) playerstatsView.findViewById(R.id.totalScore);
-        TextView totalDeathsTextView = (TextView) playerstatsView.findViewById(R.id.totalDeaths);
-        TextView totalFieldsMovedTextView = (TextView) playerstatsView.findViewById(R.id.totalFieldsMoved);
-        TextView totalItemsPickedUpTextView = (TextView) playerstatsView.findViewById(R.id.totalItemsPickedUp);
-
-        Stats stats = database.statsDao().getStats();
-        String highestScore = "Highest Score: " + stats.highestScore;
-        String totalScore = "Total Score: " + stats.totalScore ;
-        String totalDeaths = "Total Deaths: "  + stats.totalDeaths;
-        String totalFieldsMoved = "Total Fields Moved: " + stats.totalFieldsMoved;
-        String totalItemsPickedUp = "Total Items Picked Up: " + stats.totalItemsPickedUp;
-
-        highestScoreTextView.setText(highestScore);
-        totalScoreTextView.setText(totalScore);
-        totalDeathsTextView.setText(totalDeaths);
-        totalFieldsMovedTextView.setText(totalFieldsMoved);
-        totalItemsPickedUpTextView.setText(totalItemsPickedUp);
-
-        alertdialog.show();
-
-    }
-
+    /**
+     * Handler for the Play Games Button. Starts alert dialog to start sign-in intent or for signing out.
+     */
     @Override
     public void onPlayGamesButtonClicked() {
         if(displayName == null) {
@@ -296,21 +238,117 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-/*
-    public void getLeaderboardClient() {
-        System.out.println(leaderboardsClient);
+    /**
+     * Handler for the Settings Button. Switches to the Settings Fragment.
+     */
+    @Override
+    public void onSettingsButtonClicked() {
+        switchToFragment(settingsFragment);
     }
 
-    public void click(View view) {
-        System.out.println("test123");
+    /**
+     * Handler for the Player Stats Button. Starts a alert dialog that shows the local player stats.
+     */
+    @Override
+    public void onPlayerstatsButtonClicked() {
+        LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
+        View playerstatsView = layoutInflater.inflate(R.layout.playerstats, null);
+        AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this, R.style.AlertDialogTheme);
+        alertdialog.setView(playerstatsView)
+                .setCancelable(false)
+                .setNegativeButton("Close", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //close
+                    }
+                })
+                .create();
+
+        TextView highestScoreTextView = (TextView) playerstatsView.findViewById(R.id.highestScore);
+        TextView totalScoreTextView = (TextView) playerstatsView.findViewById(R.id.totalScore);
+        TextView totalDeathsTextView = (TextView) playerstatsView.findViewById(R.id.totalDeaths);
+        TextView totalFieldsMovedTextView = (TextView) playerstatsView.findViewById(R.id.totalFieldsMoved);
+        TextView totalItemsPickedUpTextView = (TextView) playerstatsView.findViewById(R.id.totalItemsPickedUp);
+
+        Stats stats = database.statsDao().getStats();
+        String highestScore = "Highest Score: " + stats.highestScore;
+        String totalScore = "Total Score: " + stats.totalScore ;
+        String totalDeaths = "Total Deaths: "  + stats.totalDeaths;
+        String totalFieldsMoved = "Total Fields Moved: " + stats.totalFieldsMoved;
+        String totalItemsPickedUp = "Total Items Picked Up: " + stats.totalItemsPickedUp;
+
+        highestScoreTextView.setText(highestScore);
+        totalScoreTextView.setText(totalScore);
+        totalDeathsTextView.setText(totalDeaths);
+        totalFieldsMovedTextView.setText(totalFieldsMoved);
+        totalItemsPickedUpTextView.setText(totalItemsPickedUp);
+
+        alertdialog.show();
+
     }
 
-    public void signIn (View view)
-*/
+    /**
+     * Handler for the Play Button. Initialize a Sketch and switches to the PFragment.
+     */
+    @Override
+    public void onPlayButtonClicked() {
+
+        sketch = new Sketch();
+        sketch.setCallback(this);
+        pFragment.setSketch(sketch);
+        switchToFragment(pFragment);
+    }
+
+    /**
+     * Handler for the Achievements Button. When successful the Achievements intent is started.
+     */
+    public void onShowAchievementsRequested() {
+        achievementsClient.getAchievementsIntent()
+                .addOnSuccessListener(new OnSuccessListener<Intent>() {
+                    @Override
+                    public void onSuccess(Intent intent) {
+                        startActivityForResult(intent, RC_UNUSED);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.d(TAG, e.getMessage());
+                    }
+                });
+    }
+
+    /**
+     * Handler for the Leaderboards Button. When successful the Leaderboards intent is started.
+     */
+
+    public void onShowLeaderboardsRequested() {
+        leaderboardsClient.getAllLeaderboardsIntent()
+                .addOnSuccessListener(new OnSuccessListener<Intent>() {
+                    @Override
+                    public void onSuccess(Intent intent) {
+                        startActivityForResult(intent, RC_UNUSED);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.d(TAG, e.getMessage());
+                    }
+                });
+    }
+
+    /**
+     * Checks if a Player was signed in in the last session.
+     * @return Boolean if the Player was signed-in.
+     */
     private boolean isSignedIn() {
         return GoogleSignIn.getLastSignedInAccount(this) != null;
     }
 
+    /**
+     * Methode that tries to automatic sign-in without noticing the User.
+     */
     private void signInSilently() {
         Log.d(TAG, "signedInSilently()");
 
@@ -328,6 +366,8 @@ public class MainActivity extends AppCompatActivity implements
                     }
                 });
     }
+
+    // Todo: vielleicht noch abändern
     @Override
     protected void onResume() {
         super.onResume();
@@ -335,7 +375,9 @@ public class MainActivity extends AppCompatActivity implements
 
         signInSilently();
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(listener);
-        checkMusicAndPlay();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        checkMusicAndPlay(prefs);
+       // mp.start();
     }
 
     @Override
@@ -345,14 +387,9 @@ public class MainActivity extends AppCompatActivity implements
         mp.pause();
     }
 
-
-    @Override
-    protected void onDestroy() {
-        mp.release();
-        AppDatabase.destroyInstance();
-        super.onDestroy();
-    }
-
+    /**
+     * Signs out the active signed-in Account.
+     */
     private void signOut() {
 
         if (!isSignedIn()) {
@@ -372,38 +409,10 @@ public class MainActivity extends AppCompatActivity implements
                 });
     }
 
-    public void onShowAchievementsRequested() {
-        achievementsClient.getAchievementsIntent()
-                .addOnSuccessListener(new OnSuccessListener<Intent>() {
-                    @Override
-                    public void onSuccess(Intent intent) {
-                        startActivityForResult(intent, RC_UNUSED);
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(Exception e) {
-                        Log.d(TAG, e.getMessage());
-                    }
-                });
-    }
 
-    public void onShowLeaderboardsRequested() {
-        leaderboardsClient.getAllLeaderboardsIntent()
-                .addOnSuccessListener(new OnSuccessListener<Intent>() {
-                    @Override
-                    public void onSuccess(Intent intent) {
-                        startActivityForResult(intent, RC_UNUSED);
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(Exception e) {
-                        Log.d(TAG, e.getMessage());
-                    }
-                });
-    }
-
+    /**
+     * Pushes the values that are locally saved in the Accomplishment outbox to Google Play.
+     */
     public void pushAccomplishments() {
         if (!isSignedIn()) {
             return;
@@ -426,29 +435,95 @@ public class MainActivity extends AppCompatActivity implements
             achievementsClient.unlock(getString(R.string.longer_better));
             outbox.longerBetter = false;
         }
+        if (outbox.wasThereAnything) {
+            achievementsClient.unlock(getString(R.string.wall_hit));
+            outbox.wasThereAnything = false;
+        }
         if (outbox.longRun > 0) {
             achievementsClient.increment(getString(R.string.long_run),
                     outbox.longRun);
             outbox.longRun = 0;
         }
+        if (outbox.unlimitedPower > 0) {
+            achievementsClient.increment(getString(R.string.unlimited_power),
+                    outbox.unlimitedPower);
+            outbox.unlimitedPower = 0;
+        }
     }
 
 
+    /**
+     *
+     * @param finalScore
+     */
     private void updateLeaderboard(int finalScore) {
         if (outbox.easyModeScore < finalScore) {
             outbox.easyModeScore = finalScore;
         }
     }
 
-    private void checkForAchievements(int score) {
+    /**
+     * Checks if the requirements for achievements were given and updates the outbox.
+     * @param score The final score of the last game.
+     * @param wallHit Boolean if a wall was hit.
+     * @param itemsPickedUp The number of items picked up.
+     */
+    private void checkForAchievements(int score, boolean wallHit, int itemsPickedUp) {
         if (score >= 1) {
             outbox.firstPoint = true;
         }
         if (score == 25) {
             outbox.longerBetter = true;
         }
+        if (wallHit) {
+            outbox.wasThereAnything = true;
+        }
+        outbox.unlimitedPower += itemsPickedUp;
         outbox.longRun++;
         outbox.goodStart = true;
+    }
+
+    /**
+     * Handler for take in the Stats of the ended Game and call Methods for updating Achievements,
+     * Leaderboard, Local Stats and for pushing them to the google Cloud.
+     * @param score The final score of the game.
+     * @param itemsPickedUp The number of items picked up.
+     * @param fieldsMoved Number of fields that were covered.
+     * @param wallHit Boolean if a wall was hit.
+     */
+    @Override
+    public void onEndedGameScore(int score, int itemsPickedUp, int fieldsMoved, boolean wallHit) {
+
+        checkForAchievements(score, wallHit, itemsPickedUp);
+
+        updateLeaderboard(score);
+
+        pushAccomplishments();
+
+        updateLocalStats(score, itemsPickedUp, fieldsMoved);
+    }
+
+    //Todo: int itemsPickedUp, int obstaclesDestroyed einfügen
+
+    /**
+     * Updates the Local stats that are saved in the database.
+     * @param score The final score of the last game.
+     * @param itemsPickedUp The number of items picked up.
+     * @param fieldsMoved Number of fields that were covered.
+     */
+    public void updateLocalStats(int score, int itemsPickedUp, int fieldsMoved) {
+        Stats stats = database.statsDao().getStats();
+        if (stats != null) {
+            database.statsDao().updateStats(score > stats.highestScore ? score : stats.highestScore,
+                    stats.totalScore + score, ++stats.totalDeaths,
+                    stats.totalItemsPickedUp + itemsPickedUp,
+                    stats.totalFieldsMoved + fieldsMoved,
+                    stats.id);
+        } else {
+            Stats insertedStats = new Stats(score, score, 1, itemsPickedUp, fieldsMoved);
+            database.statsDao().addStats(insertedStats);
+        }
+
     }
 
     @Override
@@ -478,6 +553,12 @@ public class MainActivity extends AppCompatActivity implements
         }
 
     }
+
+    /**
+     * Handler successful for connection. Sets the different Api clients (Achievements, Leaderboard, Player) depending on the signed in Account.
+     * Also pushes Achievements and Leaderboard's values.
+     * @param googleSignInAccount The signed in Account of the player
+     */
     private void onConnected(GoogleSignInAccount googleSignInAccount) {
         Log.d("SNAKE", "onConnected(): connected to Google APIs");
 
@@ -509,6 +590,9 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
+    /**
+     * Handler for disconnection. Updates the Button visibility and the Api Clients.
+     */
     private void onDisconnected() {
         Log.d("Snake", "onDisconnected()");
 
@@ -519,46 +603,40 @@ public class MainActivity extends AppCompatActivity implements
         mainMenuFragment.updateButtons(false);
     }
 
+
     @Override
-    public void onEndedGameScore(int score) {
-
-        checkForAchievements(score);
-
-        updateLeaderboard(score);
-
-        pushAccomplishments();
-
-        updateLocalStats(score);
+    protected void onDestroy() {
+        mp.release();
+        AppDatabase.destroyInstance();
+        super.onDestroy();
     }
 
-    //Todo: int itemsPickedUp, int obstaclesDestroyed einfügen
-    public void updateLocalStats(int score) {
-        Stats stats = database.statsDao().getStats();
-        if (stats != null) {
-            database.statsDao().updateStats(score > stats.highestScore ? score : stats.highestScore, stats.totalScore + score, ++stats.totalDeaths, stats.id);
-        } else {
-            Stats insertedStats = new Stats(score, score, 1);
-            database.statsDao().addStats(insertedStats);
-        }
 
-    }
-
+    /**
+     * Represents the Accomplishment Outbox that saves the gathered Achievements and Score locally,
+     * so that it can be pushed later. It is also for preventing a lost of the Accomplishments when
+     * the connection is lost during a session.
+     */
     private class AccomplishmentsOutbox {
         boolean firstPoint = false;
         boolean goodStart = false;
         boolean longerBetter = false;
-        boolean unlimitedPower = false;
         boolean wasThereAnything = false;
 
         int longRun = 0;
+        int unlimitedPower = 0;
 
         int easyModeScore = -1;
         int hardModeScore = -1;
 
+        /**
+         * Checks if the AccomplishmentsOutbox is empty, so no Accomplishments were gathered during the last push.
+         * @return Boolean if box is empty.
+         */
         boolean isEmpty() {
             return easyModeScore < 0 && hardModeScore < 0
                     && firstPoint == false && goodStart == false && longerBetter == false
-                    && unlimitedPower == false && wasThereAnything == false && longRun == 0;
+                    && wasThereAnything == false && longRun == 0 && unlimitedPower == 0;
         }
     }
 }

@@ -210,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onPlayerstatsButtonClicked() {
         LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
         View playerstatsView = layoutInflater.inflate(R.layout.playerstats, null);
-        AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this, R.style.MyTheme);
+        AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this, R.style.AlertDialogTheme);
         alertdialog.setView(playerstatsView)
                 .setCancelable(false)
                 .setNegativeButton("Close", new DialogInterface.OnClickListener() {
@@ -249,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements
         if(displayName == null) {
             LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
             View promptView = layoutInflater.inflate(R.layout.prompt, null);
-            AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this, R.style.MyTheme);
+            AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this, R.style.AlertDialogTheme);
             alertdialog.setView(promptView);
             alertdialog.setCancelable(false)
                     .setPositiveButton("Sign In", new DialogInterface.OnClickListener() {
@@ -272,7 +272,7 @@ public class MainActivity extends AppCompatActivity implements
         else {
             LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
             View promptView = layoutInflater.inflate(R.layout.prompt, null);
-            AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this, R.style.MyTheme);
+            AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this, R.style.AlertDialogTheme);
             alertdialog.setView(promptView);
             alertdialog.setCancelable(false)
                     .setPositiveButton("Sign Out", new DialogInterface.OnClickListener() {

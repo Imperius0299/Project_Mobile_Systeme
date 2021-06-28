@@ -12,6 +12,7 @@ public class Snake {
     private PVector dir;
     private int len;
     private boolean isEmpowered;
+    private boolean isTeleportEmpowered;
     private double speedDifference;
     private boolean isSpeedAffected;
 
@@ -79,6 +80,9 @@ public class Snake {
         if (item.getClass() == PowerStar.class) {
             isEmpowered = ((PowerStar) item).getEmpowered();
         }
+        if (item.getClass() == Teleport.class) {
+            isTeleportEmpowered = ((Teleport) item).getTeleportEmpowered();
+        }
     }
     //Todo: teleport Symbol
     public void teleport(int w, int h) {
@@ -109,6 +113,9 @@ public class Snake {
         if (isEmpowered) {
             isEmpowered = false;
         }
+        if (isTeleportEmpowered) {
+            isTeleportEmpowered = false;
+        }
     }
 
     public void show(PApplet pApplet, PImage image) {
@@ -135,6 +142,10 @@ public class Snake {
 
     public boolean getEmpoweredState() {
         return isEmpowered;
+    }
+
+    public boolean getTeleportedEmpoweredState() {
+        return isTeleportEmpowered;
     }
 
     public double getSpeedDifference() {

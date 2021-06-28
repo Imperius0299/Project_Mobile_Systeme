@@ -67,6 +67,8 @@ public class Sketch extends PApplet {
     PImage itemSpeedBoostImage;
     PImage itemSpeedLossImage;
     PImage itemPowerStarImage;
+    PImage itemTeleportImage;
+
     PFont Font;
 
     //Sound
@@ -147,6 +149,7 @@ public class Sketch extends PApplet {
         itemSpeedBoostImage = loadImage("item_speedup.png");
         itemSpeedLossImage = loadImage("item_speeddown.png");
         itemPowerStarImage = loadImage("item_stern.png");
+        itemTeleportImage = loadImage("item_teleporter.png");
 
 
         System.out.println(dataPath(""));
@@ -206,7 +209,7 @@ public class Sketch extends PApplet {
     }
 
     public void createFood() {
-        food = new PVector((int) random(w), (int) random(h));
+        food = getPosAvailable();
     }
 
 
@@ -355,6 +358,30 @@ public class Sketch extends PApplet {
         return super.getActivity();
     }
 
+    public PVector getPosAvailable() {
+        PVector randomVector = new PVector((int) random(w), (int) random(h));
+
+        for (Obstacle obstacle : obstaclaList) {
+            if (obstacle.getPos().x == randomVector.x && obstacle.getPos().y == randomVector.y) {
+                randomVector = getPosAvailable();
+                break;
+            }
+        }
+        for (Item item : itemList) {
+            if (item.getPos().x == randomVector.x && item.getPos().y == randomVector.y) {
+                randomVector = getPosAvailable();
+                break;
+            }
+        }
+        if (food != null) {
+            if (food.x == randomVector.x && food.y == randomVector.y) {
+                randomVector = getPosAvailable();
+            }
+        }
+
+        return randomVector;
+    }
+
     @Override
     public void draw() {
         background(197, 167, 225);
@@ -378,7 +405,7 @@ public class Sketch extends PApplet {
         text("Score: "+snake.getLen(), scoreCoordinateX, (float) (scoreCoordinateY-Math.cbrt(scoreCoordinateX/2)));
 
         fill(255,255,255);
-        text("Score: "+snake.getLen(), scoreCoordinateX, scoreCoordinateY);
+        text("Score: "+snake.getLen() + ": " + frameRate, scoreCoordinateX, scoreCoordinateY);
 
 
         scale(rez);
@@ -401,7 +428,9 @@ public class Sketch extends PApplet {
                     snakeImage = loadImage("snake_block_item.png");
                     itemActiveFrameCount = frameCount + itemActiveFrameTime;
                     framecountDivider += snake.getSpeedDifference();
-                    snake.resetSpeedDifference();
+                    if (snake.getSpeedDifference() != 0) {
+                        snake.resetSpeedDifference();
+                    }
                 }
                 snake.move((int) rez);
             }
@@ -420,26 +449,33 @@ public class Sketch extends PApplet {
             if (frameCount % 2 == 0) {
                 if ((snake.getDir().x != 0 || snake.getDir().y != 0)){
                     if (frameCount % 30 == 0) {
-                        int randomPosX = (int) random(w);
-                        int randomPosY = (int) random(h);
-                        obstaclaList.add(new Obstacle(randomPosX, randomPosY));
+                        PVector posAvailable = getPosAvailable();
+                        int posX = (int) posAvailable.x;
+                        int posY = (int) posAvailable.y;
+                        obstaclaList.add(new Obstacle(posX, posY));
                     }
                     if (frameCount % 60 == 0) {
-                        int randomItem = (int) random(0, 3);
+                        int randomItem = (int) random(0, 4);
 
-                        int randomPosX = (int) random(w);
-                        int randomPosY = (int) random(h);
+                        PVector posAvailable = getPosAvailable();
+
+                        int posX = (int) posAvailable.x;
+                        int posY = (int) posAvailable.y;
+
+
 
                         switch (randomItem) {
                             case 0:
-                                itemList.add(new SpeedBoost(randomPosX, randomPosY, itemSpeedBoostImage));
+                                itemList.add(new SpeedBoost(posX, posY, itemSpeedBoostImage));
                                 break;
                             case 1:
-                                itemList.add(new SpeedLoss(randomPosX, randomPosY, itemSpeedLossImage));
+                                itemList.add(new SpeedLoss(posX, posY, itemSpeedLossImage));
                                 break;
                             case 2:
-                                itemList.add(new PowerStar(randomPosX, randomPosY, itemPowerStarImage));
+                                itemList.add(new PowerStar(posX, posY, itemPowerStarImage));
                                 break;
+                            case 3:
+                                itemList.add(new Teleport(posX, posY, itemTeleportImage));
                         }
                     }
                     if (frameCount % 90 == 0) {
@@ -505,7 +541,7 @@ public class Sketch extends PApplet {
         PVector snakeHead = snake.getHeadVect();
         ArrayList<PVector> snakeBody = snake.getBody();
         if (snakeHead.x < 0 || snakeHead.x > w - 1 || snakeHead.y < 0 || snakeHead.y > h - 1){
-            if (snake.getEmpoweredState()) {
+            if (snake.getTeleportedEmpoweredState()) {
                 snake.teleport(w, h);
                 return;
             }
@@ -515,8 +551,9 @@ public class Sketch extends PApplet {
             if (snakeHead.x == obstacle.getPos().x && snakeHead.y == obstacle.getPos().y) {
                 if (snake.getEmpoweredState()) {
                     obstaclaList.remove(obstacle);
+                    obstaclaList.trimToSize();
                     // Todo : nur einmal oder x frames?
-                    snake.resetItemPower();
+                    //snake.resetItemPower();
                     return;
                 }
                 gameover = true;

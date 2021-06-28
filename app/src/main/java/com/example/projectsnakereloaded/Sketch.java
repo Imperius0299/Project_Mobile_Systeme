@@ -154,6 +154,13 @@ public class Sketch extends PApplet {
     }
 
     public void playSound(int rawId) {
+       /* if (mp != null) {
+            if (mp.isPlaying()) {
+                mp.stop();
+                mp.release();
+                mp.release();
+            }
+        } */
         mp = MediaPlayer.create((MainActivity)getActivity(), rawId);
         mp.start();
 
@@ -421,7 +428,6 @@ public class Sketch extends PApplet {
 
 
 
-
         }else {
             //TODO: Loop unterbrechen, damit nicht immer abgeschickt
             //looping = !looping;
@@ -430,8 +436,8 @@ public class Sketch extends PApplet {
             callback.onEndedGameScore(finalScore);
             //callback.
 
-            playSound(R.raw.tot_dum_dum_dum);
 
+            playSound(R.raw.tot_dum_dum_dum);
             scale(1/rez);
             gameoverImage.resize(width, height);
             image(gameoverImage, 0, 0);

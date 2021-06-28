@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#B5733D0D"
+    android:background="#d0e6ff "
     android:orientation="vertical">
 
     <TableRow

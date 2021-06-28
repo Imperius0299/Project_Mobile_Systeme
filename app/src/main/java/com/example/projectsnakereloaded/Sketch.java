@@ -1,8 +1,11 @@
 package com.example.projectsnakereloaded;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.util.Log;
+
+import androidx.preference.PreferenceManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -69,6 +72,8 @@ public class Sketch extends PApplet {
     //Sound
     MediaPlayer mp;
 
+    SharedPreferences prefs;
+
 // https://stackoverflow.com/questions/18459122/play-sound-on-button-click-android
 
     public Sketch(int width, int height) {
@@ -95,14 +100,49 @@ public class Sketch extends PApplet {
     public void setup() {
         //soundFile = new SoundFile(this, "apfelsound_badum.mp3");
 
+        //rez = 60;
+        //foodImage = loadImage("snake_apple.png");
+        //backgroundImage = loadImage("background_image_stone.png");
+
+        prefs = PreferenceManager.getDefaultSharedPreferences((MainActivity)getActivity());
+        String difficulty = prefs.getString("difficulty_key", "easy");
+        String obst = prefs.getString("list_food_type", "apple");
+        String bgImage = prefs.getString("background_key", "wall");
+
+        if(obst.equals("peach")){
+            foodImage = loadImage("snake_peach.png");
+        }
+        else if(obst.equals("lemon")){
+            foodImage = loadImage("snake_lemon.png");
+        }
+        else {
+            foodImage = loadImage("snake_apple.png");
+        }
+
+        if (bgImage.equals("beach")) {
+            backgroundImage = loadImage("background_image.png");
+        }
+        else {
+            backgroundImage = loadImage("background_image_stone.png");
+        }
+
+
+        if(difficulty.equals("hard")){
+            rez = 100;
+        }
+        else if (difficulty.equals("medium")) {
+            rez = 80;
+        }
+        else {
+            rez = 60;
+        }
+
 
 
         // Quelle für png https://github.com/rembound/Snake-Game-HTML5
         //String url = "https://raw.githubusercontent.com/rembound/Snake-Game-HTML5/master/snake-graphics.png";
         obstacleImage = loadImage("snake_brick.png");
-        foodImage = loadImage("snake_apple.png");
         snakeImage = loadImage("snake_block_default.png");
-        backgroundImage = loadImage("background_image_stone.png");
         gameoverImage = loadImage("gameover_background.png");
         itemSpeedBoostImage = loadImage("item_speedup.png");
         itemSpeedLossImage = loadImage("item_speeddown.png");
@@ -114,7 +154,6 @@ public class Sketch extends PApplet {
         //image(testImage, 0, 0, 320, 320, 0, 0 ,64 ,64);
         //createImage()
 
-        rez = 60;
         w = floor(width / rez);
         h = floor(height / rez);
         frameRate(10);
@@ -341,7 +380,9 @@ public class Sketch extends PApplet {
         fill(255,255,255);
         text("Score: "+snake.getLen(), scoreCoordinateX, scoreCoordinateY);
 
+
         scale(rez);
+
 
         //Todo: Testen wegen slow Down Speed Up
         //createFood();

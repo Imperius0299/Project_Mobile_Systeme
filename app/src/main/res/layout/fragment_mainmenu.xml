@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:onClick="buttonPressed"
     android:background="@drawable/background"
     android:scaleType="centerCrop"
     tools:context=".MainActivity">
@@ -28,7 +27,7 @@
                     android:id="@+id/playGames_Button"
                     android:layout_width="55dp"
                     android:layout_height="55dp"
-                    android:layout_margin="8dp"
+                    android:layout_margin="15dp"
                     android:background="@null"
                     android:scaleType="centerCrop"
                     app:srcCompat="@drawable/play_games_logo" />
@@ -43,7 +42,7 @@
                     android:id="@+id/settings_Button"
                     android:layout_width="55dp"
                     android:layout_height="55dp"
-                    android:layout_margin="8dp"
+                    android:layout_margin="15dp"
                     android:background="@null"
                     android:scaleType="centerCrop"
                     app:srcCompat="@drawable/settings_icon" />
@@ -96,7 +95,6 @@
             android:layout_marginTop="50dp"
             android:layout_marginBottom="5dp"
             android:background="@null"
-            android:onClick="buttonPressed"
             android:scaleType="centerInside"
             app:srcCompat="@drawable/play_button" />
 

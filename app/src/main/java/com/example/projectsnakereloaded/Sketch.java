@@ -101,7 +101,7 @@ public class Sketch extends PApplet {
         //String url = "https://raw.githubusercontent.com/rembound/Snake-Game-HTML5/master/snake-graphics.png";
         obstacleImage = loadImage("snake_brick.png");
         foodImage = loadImage("snake_apple.png");
-        snakeImage = loadImage("snake_block.png");
+        snakeImage = loadImage("snake_block_default.png");
         backgroundImage = loadImage("background_image_stone.png");
         gameoverImage = loadImage("gameover_background.png");
         itemSpeedBoostImage = loadImage("item_speedup.png");
@@ -350,6 +350,7 @@ public class Sketch extends PApplet {
 
                 if (snake.collectItem(itemList)) {
                     //Todo: Implement Feature Sound
+                    snakeImage = loadImage("snake_block_item.png");
                     itemActiveFrameCount = frameCount + itemActiveFrameTime;
                     framecountDivider += snake.getSpeedDifference();
                     snake.resetSpeedDifference();
@@ -360,6 +361,7 @@ public class Sketch extends PApplet {
             if (frameCount == itemActiveFrameCount){
                 framecountDivider = 2;
                 snake.resetItemPower();
+                snakeImage = loadImage("snake_block_default.png");
             }
 
 

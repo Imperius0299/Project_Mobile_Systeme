@@ -1,28 +1,19 @@
 package com.example.projectsnakereloaded;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.res.AssetManager;
-import android.media.Image;
 import android.media.MediaPlayer;
-import android.net.Uri;
-import android.telecom.Call;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.MotionEvent;
-
-import androidx.core.content.ContextCompat;
-import androidx.core.view.GestureDetectorCompat;
 
 import java.io.IOException;
 import java.util.ArrayList;
+
 
 import processing.core.PApplet;
 import processing.core.PFont;
 import processing.core.PImage;
 import processing.core.PVector;
-//import processing.sound.Sound;
-//import processing.sound.SoundFile;
+import processing.sound.SoundFile;
+
 
 public class Sketch extends PApplet {
 
@@ -39,6 +30,10 @@ public class Sketch extends PApplet {
     private float rez;
     private int w;
     private int h;
+
+    private float framecountDivider;
+    private int itemActiveFrameTime;
+    private int itemActiveFrameCount;
 
     private static final String TAG = "Snake";
 
@@ -66,7 +61,13 @@ public class Sketch extends PApplet {
     PImage foodImage;
     PImage backgroundImage;
     PImage gameoverImage;
+    PImage itemSpeedBoostImage;
+    PImage itemSpeedLossImage;
+    PImage itemPowerStarImage;
     PFont Font;
+
+    //Sound
+    MediaPlayer mp;
 
 // https://stackoverflow.com/questions/18459122/play-sound-on-button-click-android
 
@@ -101,8 +102,12 @@ public class Sketch extends PApplet {
         obstacleImage = loadImage("snake_brick.png");
         foodImage = loadImage("snake_apple.png");
         snakeImage = loadImage("snake_block.png");
-        backgroundImage = loadImage("background_image.png");
+        backgroundImage = loadImage("background_image_stone.png");
         gameoverImage = loadImage("gameover_background.png");
+        itemSpeedBoostImage = loadImage("item_speedup.png");
+        itemSpeedLossImage = loadImage("item_speeddown.png");
+        itemPowerStarImage = loadImage("item_stern.png");
+
 
         System.out.println(dataPath(""));
         //foodImage = loadImage();
@@ -112,7 +117,7 @@ public class Sketch extends PApplet {
         rez = 60;
         w = floor(width / rez);
         h = floor(height / rez);
-        frameRate(5);
+        frameRate(10);
 
         Font = createFont("The Impostor.ttf", rez/30);
 
@@ -127,6 +132,10 @@ public class Sketch extends PApplet {
         snake = new Snake(w , h);
         obstaclaList = new ArrayList<>();
         itemList = new ArrayList<>();
+
+        framecountDivider = 2;
+        itemActiveFrameTime = 20;
+        itemActiveFrameCount = 0;
         createFood();
 
         //Zum Prüfen des Grids
@@ -138,38 +147,22 @@ public class Sketch extends PApplet {
         PFont font = createFont("SansSerif", 24 * displayDensity);
         textFont(font);
         textAlign(CENTER, CENTER);
+
+        //Sound
+        //mp = new MediaPlayer();
+
+    }
+
+    public void playSound(int rawId) {
+        mp = MediaPlayer.create((MainActivity)getActivity(), R.raw.apfelsound_badum);
+        mp.start();
+
     }
 
     public void createFood() {
         food = new PVector((int) random(w), (int) random(h));
     }
 
-    public void endGame() {
-        PVector snakeHead = snake.getHeadVect();
-        ArrayList<PVector> snakeBody = snake.getBody();
-        if (snakeHead.x < 0 || snakeHead.x > w - 1 || snakeHead.y < 0 || snakeHead.y > h - 1){
-            gameover = true;
-        }
-        for (Obstacle obstacle : obstaclaList) {
-            if (snakeHead.x == obstacle.getPos().x && snakeHead.y == obstacle.getPos().y) {
-                gameover = true;
-            }
-        }
-        /*for (PVector bodyPart : snake.getBody()) {
-            if (bodyPart.x == snakeHead.x && bodyPart.y == snakeHead.y && !bodyPart.equals(snakeHead)) {
-                gameover = true;
-            }
-        }*/
-        for (int i=0; i< snake.getBody().size() -1; i++){
-            if (snakeHead.x == snakeBody.get(i).x && snakeHead.y == snakeBody.get(i).y){
-                gameover = true;
-            }
-        }
-    }
-
-    private float calcCircumference(float a, float b, float c) {
-        return (a + b + c) / 2;
-    }
 
     private float[] getEdges(PVector v1, PVector v2, PVector v3) {
         float a = v1.dist(v2);
@@ -194,9 +187,6 @@ public class Sketch extends PApplet {
         return heronsFormula(a, b, c);
     }
 
-    private float sumSquareTri(float a, float b, float c) {
-        return round(a + b + c);
-    }
 
     private float calculatePartialTriangleTotalSquare(PVector p1, PVector p2, PVector p3, PVector pMouse) {
 
@@ -218,18 +208,12 @@ public class Sketch extends PApplet {
         PVector pMouse = new PVector(mouseXRez, mouseYRez);
 
 
-        //Triangle 1 full Top
+
         float a1Full = round(calcSquareTriangle(pA, pB, pM));
         float a2Full = round(calcSquareTriangle(pA, pC, pM));
         float a3Full = round(calcSquareTriangle(pB, pD, pM));
         float a4Full = round(calcSquareTriangle(pC, pD, pM));
-        /*
-        float a11 = calcSquareTriangle(pA, pM, pMouse);
-        float a12 = calcSquareTriangle(pM, pB, pMouse);
-        float a13 = calcSquareTriangle(pA, pB, pMouse);
 
-        float a1MouseSum = sumSquareTri(a11, a12, a13);
-         */
         float a1Sum = calculatePartialTriangleTotalSquare(pA, pB, pM, pMouse);
 
         float a2Sum = calculatePartialTriangleTotalSquare(pA, pC, pM, pMouse);
@@ -239,46 +223,25 @@ public class Sketch extends PApplet {
         float a4Sum = calculatePartialTriangleTotalSquare(pC, pD, pM, pMouse);
 
 
-        //float a31 = calcSquareTriangle()
-
-        //Triangle 2 full Left
-        //float a2Full = round(calcSquareTriangle(pA, pC, pM));
-
-        /*
-        float a21 = calcSquareTriangle(pA, pM, pMouse);
-        float a22 = calcSquareTriangle(pM, pC, pMouse);
-        float a23 = calcSquareTriangle(pA, pC, pMouse);
-
-        float a2MouseSum = sumSquareTri(a21, a22, a23);
-        */
-        // Right
-
-        //float a3Full = round(calcSquareTriangle(pB, pD, pM));
-
-        /*
-        float a31 = calcSquareTriangle(pB, pM, pMouse);
-        float a32 = calcSquareTriangle(pM, pD, pMouse);
-        float a33 = calcSquareTriangle(pB, pD, pMouse);
-
-        float a3MouseSum = sumSquareTri(a31, a32, a33);
-        */
-        // Bottom
-
-        //float a4Full = round(calcSquareTriangle(pC, pD, pM));
-        /*
-        float a41 = calcSquareTriangle(pC, pM, pMouse);
-        float a42 = calcSquareTriangle(pM, pD, pMouse);
-        float a43 = calcSquareTriangle(pC, pD, pMouse);
-
-        float a4MouseSum = sumSquareTri(a41, a42, a43);
-        */
         if (a1Full == a1Sum){
+            if (snake.getBody().size() > 1 && snake.getDir().y == 1) {
+                return;
+            }
             snake.setDir(0, -1);
         } else if (a2Full == a2Sum) {
+            if (snake.getBody().size() > 1 && snake.getDir().x == 1) {
+                return;
+            }
             snake.setDir(-1, 0);
         } else if (a3Full == a3Sum) {
+            if (snake.getBody().size() > 1 && snake.getDir().x == -1) {
+                return;
+            }
             snake.setDir(1, 0);
         } else if (a4Full == a4Sum) {
+            if (snake.getBody().size() > 1 && snake.getDir().y == -1) {
+                return;
+            }
             snake.setDir(0, 1);
         }
 
@@ -359,7 +322,7 @@ public class Sketch extends PApplet {
         tSizeHelper = (min(displayHeight, displayWidth)/25);
         textSize(tSizeHelper);
 
-        float scoreCoordinateX = (float) (width/7.5);
+        float scoreCoordinateX = width/2;
         float scoreCoordinateY = height/60;
 
         fill(0,0,0);
@@ -372,75 +335,91 @@ public class Sketch extends PApplet {
         text("Score: "+snake.getLen(), scoreCoordinateX, scoreCoordinateY);
 
         scale(rez);
-        //rect(width/2,height/2,20 * displayDensity,20 * displayDensity);
-        //text("Hello", width/2, height/2);
-       /* fill(197, 167, 225);
-        rect(0, 0, 1077, 250);
-        rect(0, 250, 250, 1200);
-        rect(830, 250, 250, 1200);
-        rect(0, 1570, 1077, 250); */
-        PVector pV1 = new PVector(0,0);
-        PVector pV2 = new PVector(w, h);
-        PVector pV3 = new PVector(0, h);
-        PVector pV4 = new PVector(w, 0);
 
-        pV1.dist(pV2);
-        //System.out.println(pV1.dist(pV2));
-
-        /*
-        fill(255);
-        line(0,0, w, h);
-        line(w, 0, 0, h);
-
-         */
-
-
-
-
-
-
-
+        //Todo: Testen wegen slow Down Speed Up
         //createFood();
         if (!gameover) {
 
-            if (snake.eat(food)) {
-                createFood();
-                ((MainActivity)getActivity()).playApfelsound();
-                //soundFile.play();
+            if (frameCount % framecountDivider == 0) {
+                if (snake.eat(food)) {
+                    createFood();
+                    playSound(R.raw.apfelsound_badum);
+                    //soundFile.play();
+                }
+
+
+                if (snake.collectItem(itemList)) {
+                    //Todo: Implement Feature Sound
+                    itemActiveFrameCount = frameCount + itemActiveFrameTime;
+                    framecountDivider += snake.getSpeedDifference();
+                    snake.resetSpeedDifference();
+                }
+                snake.move((int) rez);
             }
 
-            if (snake.collectItem(itemList)) {
-                //Todo: Implement Feature Sound
+            if (frameCount == itemActiveFrameCount){
+                framecountDivider = 2;
+                snake.resetItemPower();
             }
-            snake.move((int) rez);
+
+
             snake.show(this, snakeImage);
 
 
-            if ((snake.getDir().x != 0 || snake.getDir().y != 0)){
-                if (frameCount % 30 == 0) {
-                    int randomPosX = (int) random(w);
-                    int randomPosY = (int) random(h);
-                    obstaclaList.add(new Obstacle(randomPosX, randomPosY));
+
+            if (frameCount % 2 == 0) {
+                if ((snake.getDir().x != 0 || snake.getDir().y != 0)){
+                    if (frameCount % 30 == 0) {
+                        int randomPosX = (int) random(w);
+                        int randomPosY = (int) random(h);
+                        obstaclaList.add(new Obstacle(randomPosX, randomPosY));
+                    }
+                    if (frameCount % 60 == 0) {
+                        int randomItem = (int) random(0, 3);
+
+                        int randomPosX = (int) random(w);
+                        int randomPosY = (int) random(h);
+
+                        switch (randomItem) {
+                            case 0:
+                                itemList.add(new SpeedBoost(randomPosX, randomPosY, itemSpeedBoostImage));
+                                break;
+                            case 1:
+                                itemList.add(new SpeedLoss(randomPosX, randomPosY, itemSpeedLossImage));
+                                break;
+                            case 2:
+                                itemList.add(new PowerStar(randomPosX, randomPosY, itemPowerStarImage));
+                                break;
+                        }
+                    }
+                    if (frameCount % 90 == 0) {
+                        int randomPos = (int) random(0, obstaclaList.size());
+                        obstaclaList.remove(randomPos);
+                        obstaclaList.trimToSize();
+
+                    }
                 }
-                if (frameCount % 60 == 0) {
-                    int randomPosX = (int) random(w);
-                    int randomPosy = (int) random(h);
-                    itemList.add(new Mushroom(randomPosX, randomPosy));
+            }
+
+
+                for (Obstacle obstacle : obstaclaList) {
+                    obstacle.show(this, obstacleImage);
+
                 }
-            }
 
-            for (Obstacle obstacle : obstaclaList) {
-                obstacle.show(this, obstacleImage);
+                for (Item item : itemList) {
+                    item.show(this);
+                }
 
-            }
+                image(foodImage,food.x, food.y, 1, 1);
 
-            for (Item item : itemList) {
-                item.show(this);
-            }
+                if (frameCount % framecountDivider == 0){
+                    endGame();
+                }
 
-            image(foodImage,food.x, food.y, 1, 1);
 
-            endGame();
+
+
         }else {
             //TODO: Loop unterbrechen, damit nicht immer abgeschickt
             //looping = !looping;
@@ -450,7 +429,6 @@ public class Sketch extends PApplet {
             //callback.
 
             ((MainActivity)getActivity()).playDeathsound();
-            //((GameActivity)getActivity()).testMethod();
 
             scale(1/rez);
             gameoverImage.resize(width, height);
@@ -471,6 +449,34 @@ public class Sketch extends PApplet {
             fill(255,255,255);
             text(restartgame,width/2, (float) ((height/2)));
 
+        }
+    }
+
+    public void endGame() {
+        PVector snakeHead = snake.getHeadVect();
+        ArrayList<PVector> snakeBody = snake.getBody();
+        if (snakeHead.x < 0 || snakeHead.x > w - 1 || snakeHead.y < 0 || snakeHead.y > h - 1){
+            if (snake.getEmpoweredState()) {
+                snake.teleport(w, h);
+                return;
+            }
+            gameover = true;
+        }
+        for (Obstacle obstacle : obstaclaList) {
+            if (snakeHead.x == obstacle.getPos().x && snakeHead.y == obstacle.getPos().y) {
+                if (snake.getEmpoweredState()) {
+                    obstaclaList.remove(obstacle);
+                    // Todo : nur einmal oder x frames?
+                    snake.resetItemPower();
+                    return;
+                }
+                gameover = true;
+            }
+        }
+        for (int i=0; i< snake.getBody().size() -1; i++){
+            if (snakeHead.x == snakeBody.get(i).x && snakeHead.y == snakeBody.get(i).y){
+                gameover = true;
+            }
         }
     }
 }

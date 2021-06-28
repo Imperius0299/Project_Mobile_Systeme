@@ -8,20 +8,21 @@ public class Item {
 
     private int x;
     private int y;
+    private PImage image;
 
-    public Item(int x, int y) {
+    public Item(int x, int y, PImage image) {
         this.x = x;
         this.y = y;
+        this.image = image;
     }
 
     //Todo: PImage einfügen
     public void show(PApplet pApplet) {
-        pApplet.noStroke();
-        pApplet.fill(255, 255, 0);
-        pApplet.rect(x, y, 1, 1);
+        pApplet.image(image, x, y, 1, 1);
     }
 
     public PVector getPos() {
         return new PVector(x, y);
     }
+
 }

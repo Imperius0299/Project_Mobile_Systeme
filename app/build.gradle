@@ -29,6 +29,9 @@ android {
 }
 
 dependencies {
+    implementation files('libs\\sound.jar')
+    implementation files('libs\\jsyn-20171016.jar')
+    implementation files('libs\\javamp3-1.0.3.jar')
 
     //implementation 'org.p5android:processing-core:4.0.3'
     def room_version = "2.3.0"

@@ -41,7 +41,9 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
     private ImageButton buttonAchievements;
     private ImageButton buttonLeaderboard;
 
-    
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -66,10 +68,18 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
         return view;
     }
 
+    /**
+     * Set's the listener for the main menu.
+     * @param listener
+     */
     public void setListener(Listener listener) {
         this.listener = listener;
     }
 
+    /**
+     * Set's the onclick methods for the different buttons in dependency of the listener.
+     * @param v The view which is clicked.
+     */
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -95,6 +105,11 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
     }
 
     //Todo : fixen wenn von fragmet zurück
+
+    /**
+     * Updates the Buttons visibility and and onclick state.
+     * @param isSignedIn A Boolean if a User is signed-in.
+     */
     public void updateButtons(boolean isSignedIn) {
         if (!isSignedIn) {
             buttonAchievements.setEnabled(false);

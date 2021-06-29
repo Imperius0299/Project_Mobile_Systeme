@@ -29,6 +29,7 @@ public class Sketch extends PApplet {
     private int w;
     private int h;
 
+    private float framecountKey;
     private float framecountDivider;
     private int itemActiveFrameTime;
     private int itemActiveFrameCount;
@@ -271,7 +272,8 @@ public class Sketch extends PApplet {
 
     @Override
     public void keyPressed() {
-        if (key == CODED && (frameCount % 1 == 0)) {
+        if (key == CODED && (frameCount > framecountKey)) {
+            framecountKey = frameCount + frameRate * (float) 0.1;
             switch (keyCode) {
                     case UP:
                         if (snake.getBody().size() > 1 && snake.getDir().y == 1) {

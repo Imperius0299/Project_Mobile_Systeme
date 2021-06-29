@@ -26,7 +26,6 @@ public class Item {
         this.image = image;
     }
 
-    //Todo: PImage einfügen
 
     /**
      * Shows the item tile with the proposed image.

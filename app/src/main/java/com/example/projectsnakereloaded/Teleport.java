@@ -3,15 +3,15 @@ package com.example.projectsnakereloaded;
 import processing.core.PImage;
 
 /**
- * Represents the Teleport Item in the Sketch.
+ * Represents the teleport item in the sketch.
  */
 public class Teleport extends Item{
 
     /**
-     * Creates a Teleport Item at a specific position.
-     * @param x The horizontal coordinate.
-     * @param y The vertical coordinate.
-     * @param image The image that represents the Item.
+     * Creates a teleport item at a specific position.
+     * @param x - The horizontal coordinate.
+     * @param y - The vertical coordinate.
+     * @param image - The image that represents the item.
      */
     public Teleport(int x, int y, PImage image) {
         super(x, y, image);

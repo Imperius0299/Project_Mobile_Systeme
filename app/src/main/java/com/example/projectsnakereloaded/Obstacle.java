@@ -17,10 +17,10 @@ public class Obstacle {
     PImage image;
 
     /**
-     * Creates a Obstacle at a specific position.
-     * @param x The horizontal coordinate.
-     * @param y The vertical coordinate.
-     * @param image The image that represents the Obstacle.
+     * Creates an obstacle at a specific position.
+     * @param x - The horizontal coordinate.
+     * @param y - The vertical coordinate.
+     * @param image - The image that represents the obstacle.
      */
     public Obstacle(int x, int y, PImage image) {
         this.x = x;
@@ -29,16 +29,16 @@ public class Obstacle {
     }
 
     /**
-     * Shows the Obstacle tile with the proposed image.
-     * @param pApplet The sketch where to show the image.
+     * Shows the obstacle tile with the proposed image.
+     * @param pApplet - The sketch where to show the image.
      */
     public void show(PApplet pApplet) {
             pApplet.image(image, this.x, this.y, 1, 1);
     }
 
     /**
-     * Get's the position of the obstacle.
-     * @return A PVector holding the Position coordinates.
+     * Gets the position of the obstacle.
+     * @return A PVector holding the position coordinates.
      */
     public PVector getPos() {
         return new PVector(x, y);

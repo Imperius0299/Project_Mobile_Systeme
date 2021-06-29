@@ -7,7 +7,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.preference.PreferenceFragmentCompat;
 
 /**
- * Represents the Settings of the Game.
+ * Represents the settings of the game.
  */
 public class SettingsFragment extends PreferenceFragmentCompat {
 

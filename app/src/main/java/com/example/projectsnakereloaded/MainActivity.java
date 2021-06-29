@@ -37,10 +37,10 @@ import com.google.android.gms.tasks.Task;
 import processing.android.PFragment;
 
 /* Menu Sound by
-Superepic by Alexander Nakarada | https://www.serpentsoundstudios.com
-        Music promoted by https://www.chosic.com
-        Attribution 4.0 International (CC BY 4.0)
-        https://creativecommons.org/licenses/by/4.0/
+    Superepic by Alexander Nakarada | https://www.serpentsoundstudios.com
+    Music promoted by https://www.chosic.com
+    Attribution 4.0 International (CC BY 4.0)
+    https://creativecommons.org/licenses/by/4.0/
 */
 public class MainActivity extends AppCompatActivity implements
         Sketch.Callback,
@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements
 
 
     //Window Fullscreen https://www.tutorialspoint.com/how-to-get-full-screen-activity-in-android
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -115,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements
         mp.setLooping(true);
 
         //Inspiration für Shared preferences listener durch https://stackoverflow.com/a/33509405
+
         listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
@@ -148,8 +150,8 @@ public class MainActivity extends AppCompatActivity implements
     //Todo: Problem wenn Musik ausgeschaltet wird fixen
 
     /**
-     * Checks the music setting and play or pause Music depending on the switch.
-     * @param sharedPreferences An instance of the shared preferences.
+     * Checks the music setting and plays or pauses music depending on the switch.
+     * @param sharedPreferences - An instance of the shared preferences.
      */
     public void checkMusicAndPlay(SharedPreferences sharedPreferences) {
         SharedPreferences prefs = sharedPreferences;
@@ -175,8 +177,8 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Handler for replace and add Fragment to the Backstack.
-     * @param fragment The fragment which should be shown.
+     * Handler for replacing and adding fragments to the backstack.
+     * @param fragment - The fragment which should be shown.
      */
     private void switchToFragment(Fragment fragment) {
         getSupportFragmentManager().beginTransaction().replace(R.id.container,
@@ -184,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Handler for the Play Games Button. Starts alert dialog to start sign-in intent or for signing out.
+     * Handler for the Google Play Games button. Starts an alert dialog to start sign-in intent or for signing out.
      */
     @Override
     public void onPlayGamesButtonClicked() {
@@ -239,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Handler for the Settings Button. Switches to the Settings Fragment.
+     * Handler for the settings button. Switches to the settings fragment.
      */
     @Override
     public void onSettingsButtonClicked() {
@@ -247,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Handler for the Player Stats Button. Starts a alert dialog that shows the local player stats.
+     * Handler for the Player Stats button. Starts an alert dialog that shows the local player stats.
      */
     @Override
     public void onPlayerstatsButtonClicked() {
@@ -288,7 +290,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Handler for the Play Button. Initialize a Sketch and switches to the PFragment.
+     * Handler for the Play Button. Initializes a sketch and switches to the PFragment.
      */
     @Override
     public void onPlayButtonClicked() {
@@ -300,7 +302,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Handler for the Achievements Button. When successful the Achievements intent is started.
+     * Handler for the Achievements button. When successful, the achievements intent is started.
      */
     public void onShowAchievementsRequested() {
         achievementsClient.getAchievementsIntent()
@@ -319,7 +321,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Handler for the Leaderboards Button. When successful the Leaderboards intent is started.
+     * Handler for the Leaderboards button. When successful, the leaderboards intent is started.
      */
 
     public void onShowLeaderboardsRequested() {
@@ -339,7 +341,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Checks if a Player was signed in in the last session.
+     * Checks if a player was signed in in the last session.
      * @return Boolean if the Player was signed-in.
      */
     private boolean isSignedIn() {
@@ -347,7 +349,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Methode that tries to automatic sign-in without noticing the User.
+     * Methode that tries to automatic sign-in without noticing the user.
      */
     private void signInSilently() {
         Log.d(TAG, "signedInSilently()");
@@ -388,7 +390,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Signs out the active signed-in Account.
+     * Signs out the active signed-in account.
      */
     private void signOut() {
 
@@ -411,7 +413,7 @@ public class MainActivity extends AppCompatActivity implements
 
 
     /**
-     * Pushes the values that are locally saved in the Accomplishment outbox to Google Play.
+     * Pushes the values that are locally saved in the accomplishment outbox to Google Play.
      */
     public void pushAccomplishments() {
         if (!isSignedIn()) {
@@ -464,9 +466,9 @@ public class MainActivity extends AppCompatActivity implements
 
     /**
      * Checks if the requirements for achievements were given and updates the outbox.
-     * @param score The final score of the last game.
-     * @param wallHit Boolean if a wall was hit.
-     * @param itemsPickedUp The number of items picked up.
+     * @param score - The final score of the last game.
+     * @param wallHit - Boolean if a wall was hit.
+     * @param itemsPickedUp - The number of items picked up.
      */
     private void checkForAchievements(int score, boolean wallHit, int itemsPickedUp) {
         if (score >= 1) {
@@ -484,12 +486,12 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Handler for take in the Stats of the ended Game and call Methods for updating Achievements,
-     * Leaderboard, Local Stats and for pushing them to the google Cloud.
-     * @param score The final score of the game.
-     * @param itemsPickedUp The number of items picked up.
-     * @param fieldsMoved Number of fields that were covered.
-     * @param wallHit Boolean if a wall was hit.
+     * Handler for take in the stats of the last game and calls methods for updating achievements,
+     * leaderboard, local stats and for pushing them to the Google Cloud.
+     * @param score - The final score of the game.
+     * @param itemsPickedUp - The number of items picked up.
+     * @param fieldsMoved - Number of fields that were covered.
+     * @param wallHit - Boolean if a wall was hit.
      */
     @Override
     public void onEndedGameScore(int score, int itemsPickedUp, int fieldsMoved, boolean wallHit) {
@@ -506,10 +508,10 @@ public class MainActivity extends AppCompatActivity implements
     //Todo: int itemsPickedUp, int obstaclesDestroyed einfügen
 
     /**
-     * Updates the Local stats that are saved in the database.
-     * @param score The final score of the last game.
-     * @param itemsPickedUp The number of items picked up.
-     * @param fieldsMoved Number of fields that were covered.
+     * Updates the local stats that are saved in the database.
+     * @param score - The final score of the last game.
+     * @param itemsPickedUp - The number of items picked up.
+     * @param fieldsMoved - Number of fields that were covered.
      */
     public void updateLocalStats(int score, int itemsPickedUp, int fieldsMoved) {
         Stats stats = database.statsDao().getStats();
@@ -555,9 +557,9 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Handler successful for connection. Sets the different Api clients (Achievements, Leaderboard, Player) depending on the signed in Account.
-     * Also pushes Achievements and Leaderboard's values.
-     * @param googleSignInAccount The signed in Account of the player
+     * Handler successful for connection. Sets the different API clients (achievements, leaderboard, player) depending on the signed-in account.
+     * Also pushes achievements and leaderboards values.
+     * @param googleSignInAccount - The signed in account of the player
      */
     private void onConnected(GoogleSignInAccount googleSignInAccount) {
         Log.d("SNAKE", "onConnected(): connected to Google APIs");
@@ -585,13 +587,13 @@ public class MainActivity extends AppCompatActivity implements
 
         if (!outbox.isEmpty()) {
             pushAccomplishments();
-            Toast.makeText(this, "Your progress will be uploades", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Your progress will be uploaded", Toast.LENGTH_LONG).show();
         }
 
     }
 
     /**
-     * Handler for disconnection. Updates the Button visibility and the Api Clients.
+     * Handler for disconnection. Updates the button visibility and the API clients.
      */
     private void onDisconnected() {
         Log.d("Snake", "onDisconnected()");
@@ -613,8 +615,8 @@ public class MainActivity extends AppCompatActivity implements
 
 
     /**
-     * Represents the Accomplishment Outbox that saves the gathered Achievements and Score locally,
-     * so that it can be pushed later. It is also for preventing a lost of the Accomplishments when
+     * Represents the accomplishment outbox that saves the gathered achievements and score locally,
+     * so that it can be pushed later. It is also for preventing a loss of the accomplishments when
      * the connection is lost during a session.
      */
     private class AccomplishmentsOutbox {
@@ -630,7 +632,7 @@ public class MainActivity extends AppCompatActivity implements
         int hardModeScore = -1;
 
         /**
-         * Checks if the AccomplishmentsOutbox is empty, so no Accomplishments were gathered during the last push.
+         * Checks if the accomplishments outbox is empty, so no accomplishments were gathered during the last push.
          * @return Boolean if box is empty.
          */
         boolean isEmpty() {

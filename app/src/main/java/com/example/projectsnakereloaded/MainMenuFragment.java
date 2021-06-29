@@ -14,12 +14,12 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 /**
- * Represents the Main Menu of the Game
+ * Represents the main menu of the game
  */
 public class MainMenuFragment extends Fragment implements View.OnClickListener {
 
     /**
-     * The Interface for listening to the Button clicks.
+     * The interface for listening to the button clicks.
      */
     interface Listener {
         void onShowAchievementsRequested();

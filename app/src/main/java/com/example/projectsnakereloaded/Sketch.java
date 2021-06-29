@@ -21,7 +21,7 @@ public class Sketch extends PApplet {
     private Snake snake;
     private PVector food;
 
-    private ArrayList<Obstacle> obstaclaList;
+    private ArrayList<Obstacle> obstacleList;
     private ArrayList<Item> itemList;
 
 
@@ -147,7 +147,7 @@ public class Sketch extends PApplet {
         pM = new PVector(w/2, h/2);
 
         snake = new Snake(w , h);
-        obstaclaList = new ArrayList<>();
+        obstacleList = new ArrayList<>();
         itemList = new ArrayList<>();
 
         framecountDivider = 2;
@@ -304,7 +304,7 @@ public class Sketch extends PApplet {
     public PVector getPosAvailable() {
         PVector randomVector = new PVector((int) random(w), (int) random(h));
 
-        for (Obstacle obstacle : obstaclaList) {
+        for (Obstacle obstacle : obstacleList) {
             if (obstacle.getPos().x == randomVector.x && obstacle.getPos().y == randomVector.y) {
                 randomVector = getPosAvailable();
                 break;
@@ -396,7 +396,7 @@ public class Sketch extends PApplet {
                         PVector posAvailable = getPosAvailable();
                         int posX = (int) posAvailable.x;
                         int posY = (int) posAvailable.y;
-                        obstaclaList.add(new Obstacle(posX, posY, obstacleImage));
+                        obstacleList.add(new Obstacle(posX, posY, obstacleImage));
                     }
                     if (frameCount % 60 == 0) {
                         int randomItem = (int) random(0, 4);
@@ -423,16 +423,16 @@ public class Sketch extends PApplet {
                         }
                     }
                     if (frameCount % 90 == 0) {
-                        int randomPos = (int) random(0, obstaclaList.size());
-                        obstaclaList.remove(randomPos);
-                        obstaclaList.trimToSize();
+                        int randomPos = (int) random(0, obstacleList.size());
+                        obstacleList.remove(randomPos);
+                        obstacleList.trimToSize();
 
                     }
                 }
             }
 
 
-                for (Obstacle obstacle : obstaclaList) {
+                for (Obstacle obstacle : obstacleList) {
                     obstacle.show(this);
 
                 }
@@ -488,11 +488,11 @@ public class Sketch extends PApplet {
             }
             gameover = true;
         }
-        for (Obstacle obstacle : obstaclaList) {
+        for (Obstacle obstacle : obstacleList) {
             if (snakeHead.x == obstacle.getPos().x && snakeHead.y == obstacle.getPos().y) {
                 if (snake.getEmpoweredState()) {
-                    obstaclaList.remove(obstacle);
-                    obstaclaList.trimToSize();
+                    obstacleList.remove(obstacle);
+                    obstacleList.trimToSize();
                     // Todo : nur einmal oder x frames?
                     //snake.resetItemPower();
                     wallHit = true;

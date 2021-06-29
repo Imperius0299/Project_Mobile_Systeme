@@ -36,12 +36,12 @@ import com.google.android.gms.tasks.Task;
 
 import processing.android.PFragment;
 
-/* Menu Sound by
-    Superepic by Alexander Nakarada | https://www.serpentsoundstudios.com
-    Music promoted by https://www.chosic.com
-    Attribution 4.0 International (CC BY 4.0)
-    https://creativecommons.org/licenses/by/4.0/
-*/
+/**
+ * Represents the Main Activity with the overall logic for Google Play API and
+ * button handler. Also loads the different fragments.
+ * @author Alexander Storbeck
+ * @author Luca Jetter6
+ */
 public class MainActivity extends AppCompatActivity implements
         Sketch.Callback,
         MainMenuFragment.Listener{
@@ -53,6 +53,8 @@ public class MainActivity extends AppCompatActivity implements
     private PlayersClient playersClient;
 
     private String displayName;
+
+    private boolean toastShown;
 
     private Sketch sketch;
 
@@ -190,54 +192,39 @@ public class MainActivity extends AppCompatActivity implements
      */
     @Override
     public void onPlayGamesButtonClicked() {
-        if(displayName == null) {
             LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
             View promptView = layoutInflater.inflate(R.layout.prompt, null);
+            TextView googleloginstatus = (TextView) promptView.findViewById(R.id.googleloginstatus);
             AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this, R.style.AlertDialogTheme);
             alertdialog.setView(promptView);
             alertdialog.setCancelable(false)
-                    .setPositiveButton("Sign In", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            startActivityForResult(signInClient.getSignInIntent(), RC_SIGN_IN);
-                        }
-                    })
                     .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             // do nothing
                         }
                     });
+                    if (displayName == null) {
+                        alertdialog.setPositiveButton("Sign In", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                startActivityForResult(signInClient.getSignInIntent(), RC_SIGN_IN);
+                            }
+                        });
+                        googleloginstatus.setText("You are not signed in.");
+                    } else {
+                        alertdialog.setPositiveButton("Sign Out", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                signOut();
+                                displayName = null;
+                                Toast.makeText(MainActivity.this, "Successfully signed out", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                        googleloginstatus.setText("You are signed in as " + displayName + ".");
+                    }
             alertdialog.create();
-            TextView googleloginstatus = (TextView) promptView.findViewById(R.id.googleloginstatus);
-            googleloginstatus.setText("You are not signed in.");
             alertdialog.show();
-        }
-        else {
-            LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
-            View promptView = layoutInflater.inflate(R.layout.prompt, null);
-            AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this, R.style.AlertDialogTheme);
-            alertdialog.setView(promptView);
-            alertdialog.setCancelable(false)
-                    .setPositiveButton("Sign Out", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            signOut();
-                            displayName = null;
-                            Toast.makeText(MainActivity.this, "Successfully signed out", Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            // do nothing
-                        }
-                    });
-            alertdialog.create();
-            TextView googleloginstatus = (TextView) promptView.findViewById(R.id.googleloginstatus);
-            googleloginstatus.setText("You are signed in as " + displayName + ".");
-            alertdialog.show();
-        }
     }
 
     /**
@@ -386,6 +373,9 @@ public class MainActivity extends AppCompatActivity implements
     protected void onPause() {
         super.onPause();
         PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(listener);
+        if (!mp.isPlaying()) {
+            return;
+        }
         mp.pause();
     }
 
@@ -576,11 +566,14 @@ public class MainActivity extends AppCompatActivity implements
                     public void onComplete(Task<Player> task) {
                         if (task.isSuccessful()) {
                             displayName = task.getResult().getDisplayName();
-                            String welcomeText = "Welcome:" + displayName;
-                            Toast.makeText(getApplicationContext(), welcomeText, Toast.LENGTH_LONG).show();
+                            if (!toastShown) {
+                                String welcomeText = "Welcome:" + displayName;
+                                Toast.makeText(getApplicationContext(), welcomeText, Toast.LENGTH_LONG).show();
+                                toastShown = true;
+                            }
                         } else {
                             Exception e = task.getException();
-                            displayName = "???";
+                            e.printStackTrace();
                         }
                     }
                 });
@@ -603,6 +596,8 @@ public class MainActivity extends AppCompatActivity implements
         playersClient = null;
 
         mainMenuFragment.updateButtons(false);
+
+        toastShown = false;
     }
 
 

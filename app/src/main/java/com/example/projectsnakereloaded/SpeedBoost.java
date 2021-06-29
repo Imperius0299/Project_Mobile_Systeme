@@ -28,7 +28,4 @@ public class SpeedBoost extends Item{
         return speedBoost;
     }
 
-    public void setSpeedBoost(double speedBoost) {
-        this.speedBoost = speedBoost;
-    }
 }

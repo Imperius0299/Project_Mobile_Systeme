@@ -80,13 +80,13 @@ public class Snake {
 
     /**
      * Detection if the snakes head is on the same position as an food tile.
-     * @param posFood - the position coordinates of the food tile.
+     * @param food - the position coordinates of the food tile.
      * @return The boolean if the snake collide with a food element or not.
      */
-    public boolean eat(PVector posFood) {
+    public boolean eat(Item food) {
         PVector head = body.get(body.size()-1).copy();
 
-        if (head.x == posFood.x && head.y == posFood.y) {
+        if (head.x == food.getPos().x && head.y == food.getPos().y) {
             grow();
             return true;
         }
@@ -117,18 +117,18 @@ public class Snake {
      * @param item - The item that the snake collected.
      */
     public void setItemPower(Item item) {
-        if (item.getClass() == SpeedBoost.class && !isSpeedAffected) {
+        if (item instanceof SpeedBoost && !isSpeedAffected) {
             speedDifference = ((SpeedBoost) item).getSpeedBoost();
             isSpeedAffected = true;
         }
-        if (item.getClass() == SpeedLoss.class && !isSpeedAffected) {
+        if (item instanceof SpeedLoss && !isSpeedAffected) {
             speedDifference = ((SpeedLoss) item).getSpeedLoss();
             isSpeedAffected = true;
         }
-        if (item.getClass() == PowerStar.class) {
+        if (item instanceof PowerStar) {
             isEmpowered = ((PowerStar) item).getEmpowered();
         }
-        if (item.getClass() == Teleport.class) {
+        if (item instanceof Teleport) {
             isTeleportEmpowered = ((Teleport) item).getTeleportEmpowered();
         }
     }

@@ -29,7 +29,4 @@ public class SpeedLoss extends Item{
         return speedLoss;
     }
 
-    public void setSpeedLoss(double speedLoss) {
-        this.speedLoss = speedLoss;
-    }
 }

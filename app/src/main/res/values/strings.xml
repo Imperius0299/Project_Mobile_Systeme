@@ -19,6 +19,8 @@
 
     <!-- Game Preferences -->
     <string name="food_type">Choose your preferred Food Type</string>
+    <string name="background_type">Change background design</string>
+    <string name="difficulty_type">Change difficulty</string>
 
     <!-- Messages Preferences -->
     <string name="signature_title">Your signature</string>

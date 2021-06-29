@@ -14,13 +14,13 @@
             android:entries="@array/background_entries"
             android:entryValues="@array/background_values"
             android:key="background_key"
-            android:title="Change background design" />
+            android:title="@string/background_type" />
         <ListPreference
             android:defaultValue="1"
             android:entries="@array/difficulty_entries"
             android:entryValues="@array/difficulty_values"
             android:key="difficulty_key"
-            android:title="Change difficulty" />
+            android:title="@string/difficulty_type" />
 
     </PreferenceCategory>
 

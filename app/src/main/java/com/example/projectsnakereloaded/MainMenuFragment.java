@@ -41,6 +41,8 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
     private ImageButton buttonAchievements;
     private ImageButton buttonLeaderboard;
 
+    private boolean buttonsShow;
+
     /**
      * {@inheritDoc}
      */
@@ -64,7 +66,7 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
 
         buttonAchievements = view.findViewById(R.id.buttonAchievements);
         buttonLeaderboard = view.findViewById(R.id.buttonLeaderboard);
-
+        updateButtons(false);
         return view;
     }
 

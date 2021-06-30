@@ -128,6 +128,7 @@ public class MainActivity extends AppCompatActivity implements
             }
         };
 
+
         getSupportFragmentManager().beginTransaction().add(R.id.container,
                 mainMenuFragment).commit();
     }
@@ -173,6 +174,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onBackPressed() {
         if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
             getSupportFragmentManager().popBackStack();
+            mainMenuFragment.updateButtons(isSignedIn());
         } else {
             super.onBackPressed();
         }
@@ -260,11 +262,14 @@ public class MainActivity extends AppCompatActivity implements
         TextView totalItemsPickedUpTextView = (TextView) playerstatsView.findViewById(R.id.totalItemsPickedUp);
 
         Stats stats = database.statsDao().getStats();
-        String highestScore = "Highest Score: " + stats.highestScore;
-        String totalScore = "Total Score: " + stats.totalScore ;
-        String totalDeaths = "Total Deaths: "  + stats.totalDeaths;
-        String totalFieldsMoved = "Total Fields Moved: " + stats.totalFieldsMoved;
-        String totalItemsPickedUp = "Total Items Picked Up: " + stats.totalItemsPickedUp;
+
+            String highestScore = stats != null ?  "Highest Score: " + stats.highestScore : "0";
+            String totalScore = stats != null ? "Total Score: " + stats.totalScore : "0";
+            String totalDeaths = stats != null ? "Total Deaths: "  + stats.totalDeaths : "0";
+            String totalFieldsMoved = stats != null ? "Total Fields Moved: " + stats.totalFieldsMoved : "0";
+            String totalItemsPickedUp = stats != null ? "Total Items Picked Up: " + stats.totalItemsPickedUp : "0";
+
+
 
         highestScoreTextView.setText(highestScore);
         totalScoreTextView.setText(totalScore);

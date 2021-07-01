@@ -14,7 +14,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 /**
- * Represents the main menu of the game
+ * Fragment that represents the main menu of the game.
+ * @author Alexander Storbeck
+ * @author Luca Jetter
+ * @author Bruno Oliveira (Google) - Named because of the Adaptation of Methods used in the Google API sample project (https://github.com/playgameservices/android-basic-samples)
  */
 public class MainMenuFragment extends Fragment implements View.OnClickListener {
 
@@ -66,12 +69,12 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
 
         buttonAchievements = view.findViewById(R.id.buttonAchievements);
         buttonLeaderboard = view.findViewById(R.id.buttonLeaderboard);
-        updateButtons(false);
+        updateButtons(buttonsShow);
         return view;
     }
 
     /**
-     * Set's the listener for the main menu.
+     * Sets the listener for the main menu.
      * @param listener
      */
     public void setListener(Listener listener) {
@@ -79,7 +82,7 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
     }
 
     /**
-     * Set's the onclick methods for the different buttons in dependency of the listener.
+     * Sets the onclick methods for the different buttons in dependency of the listener.
      * @param v The view which is clicked.
      */
     @Override
@@ -106,20 +109,20 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-    //Todo : fixen wenn von fragmet zurück
-
     /**
-     * Updates the Buttons visibility and and onclick state.
+     * Updates the Buttons visibility and onclick state.
      * @param isSignedIn A Boolean if a User is signed-in.
      */
     public void updateButtons(boolean isSignedIn) {
         if (!isSignedIn) {
+            buttonsShow = false;
             buttonAchievements.setEnabled(false);
             buttonLeaderboard.setEnabled(false);
 
             buttonAchievements.getDrawable().setColorFilter(Color.argb(155, 211,211,211), PorterDuff.Mode.SRC_ATOP);
             buttonLeaderboard.getDrawable().setColorFilter(Color.argb(155, 211,211,211), PorterDuff.Mode.SRC_ATOP);
         } else {
+            buttonsShow = true;
             buttonAchievements.setEnabled(true);
             buttonLeaderboard.setEnabled(true);
             buttonAchievements.getDrawable().setColorFilter(null);

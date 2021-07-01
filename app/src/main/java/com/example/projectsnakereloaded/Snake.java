@@ -12,6 +12,7 @@ import processing.core.PVector;
  */
 public class Snake {
 
+    // Inspiration by https://www.youtube.com/watch?v=AaGK-fj-BAM
     private ArrayList<PVector> body;
     private PVector dir;
 
@@ -240,16 +241,24 @@ public class Snake {
 
     /**
      * Gets the speed difference of the snake.
-     * @return A int representing the actual speed difference.
+     * @return An int holding the actual speed difference.
      */
     public double getSpeedDifference() {
         return speedDifference;
     }
 
+    /**
+     * Gets the number of fields moved by the snake.
+     * @return An int holding the actual field moved.
+     */
     public int getFieldsMoved() {
         return fieldsMoved;
     }
 
+    /**
+     * Gets the number of items collected by the snake.
+     * @return An int holding the number of items.
+     */
     public int getItemsCollected() {
         return itemsCollected;
     }

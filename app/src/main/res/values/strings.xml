@@ -36,4 +36,10 @@
     <string name="background_key">background_key</string>
     <string name="difficulty_key">difficulty_key</string>
     <string name="accelerometer_key">accelerometer_key</string>
+
+    <!-- Default List Values-->
+    <string name="default_food">apple</string>
+    <string name="default_background">Wall</string>
+    <string name="default_difficulty">easy</string>
+
 </resources>

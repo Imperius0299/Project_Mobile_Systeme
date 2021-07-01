@@ -4,19 +4,19 @@
     <PreferenceCategory app:title="@string/game_header">
 
         <ListPreference
-            android:defaultValue="1"
+            android:defaultValue="@string/default_food"
             android:entries="@array/food_entries"
             android:entryValues="@array/food_values"
             android:key="@string/food_type_key"
             android:title="@string/food_type" />
         <ListPreference
-            android:defaultValue="1"
+            android:defaultValue="@string/default_background"
             android:entries="@array/background_entries"
             android:entryValues="@array/background_values"
             android:key="@string/background_key"
             android:title="@string/background_type" />
         <ListPreference
-            android:defaultValue="1"
+            android:defaultValue="@string/default_difficulty"
             android:entries="@array/difficulty_entries"
             android:entryValues="@array/difficulty_values"
             android:key="@string/difficulty_key"

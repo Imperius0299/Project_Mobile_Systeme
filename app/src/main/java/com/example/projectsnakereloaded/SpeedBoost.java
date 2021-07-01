@@ -5,6 +5,7 @@ import processing.core.PImage;
 /**
  * Represents the speed boost item in the sketch.
  * @author Alexander Storbeck
+ * @author Luca Jetter
  */
 public class SpeedBoost extends Item{
 
@@ -12,8 +13,8 @@ public class SpeedBoost extends Item{
 
     /**
      * Creates a speed boost item at a specific position.
-     * @param x - The horizontal coordinate.
-     * @param y - The vertical coordinate.
+     * @param x The horizontal coordinate.
+     * @param y The vertical coordinate.
      * @param image The image that represents the item.
      */
     public SpeedBoost(int x, int y, PImage image) {
@@ -22,7 +23,7 @@ public class SpeedBoost extends Item{
     }
     /**
      * Gets the speed boost provided by the item for further acceleration.
-     * @return An int representing the speed loss value.
+     * @return An int holding the speed loss value.
      */
     public double getSpeedBoost() {
         return speedBoost;

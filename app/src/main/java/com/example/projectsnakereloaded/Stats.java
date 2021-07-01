@@ -24,9 +24,9 @@ public class Stats {
 
     /**
      * Creates the stats with the specific values.
-     * @param highestScore - The highest score that was reached over all games.
-     * @param totalScore - The sum of all reached scores.
-     * @param totalDeaths - The sum of the total death of the player.
+     * @param highestScore The highest score that was reached over all games.
+     * @param totalScore The sum of all reached scores.
+     * @param totalDeaths The sum of the total death of the player.
      */
     public Stats(int highestScore, int totalScore, int totalDeaths, int totalItemsPickedUp, int totalFieldsMoved) {
         this.highestScore = highestScore;

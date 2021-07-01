@@ -40,7 +40,8 @@ import processing.android.PFragment;
  * Represents the Main Activity with the overall logic for Google Play API and
  * button handler. Also loads the different fragments.
  * @author Alexander Storbeck
- * @author Luca Jetter6
+ * @author Luca Jetter
+ * @author Bruno Oliveira (Google) - Named because of the Adaptation of Methods used in the Google API sample project(https://github.com/playgameservices/android-basic-samples)
  */
 public class MainActivity extends AppCompatActivity implements
         Sketch.Callback,
@@ -56,8 +57,6 @@ public class MainActivity extends AppCompatActivity implements
 
     private boolean toastShown;
 
-    private Sketch sketch;
-
     private MediaPlayer mp;
 
     private AppDatabase database;
@@ -67,6 +66,8 @@ public class MainActivity extends AppCompatActivity implements
     private SettingsFragment settingsFragment;
 
     private  SharedPreferences.OnSharedPreferenceChangeListener listener;
+
+    private String difficulty;
 
     private static final int RC_UNUSED = 5001;
     private static final int RC_SIGN_IN = 9001;
@@ -122,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements
         listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-                if (key.equals("music")) {
+                if (key.equals(getString(R.string.music_key))) {
                     checkMusicAndPlay(sharedPreferences);
                 }
             }
@@ -133,32 +134,14 @@ public class MainActivity extends AppCompatActivity implements
                 mainMenuFragment).commit();
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (sketch != null) {
-            sketch.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        if (sketch != null) {
-            sketch.onNewIntent(intent);
-        }
-    }
-
-
     //Todo: Problem wenn Musik ausgeschaltet wird fixen
 
     /**
-     * Checks the music setting and plays or pauses music depending on the switch.
-     * @param sharedPreferences - An instance of the shared preferences.
+     * Checks the music setting and plays or pauses music depending on the switch preference.
+     * @param sharedPreferences An instance of the shared preferences.
      */
     public void checkMusicAndPlay(SharedPreferences sharedPreferences) {
-        SharedPreferences prefs = sharedPreferences;
-        if (prefs.getBoolean(getString(R.string.music_key), true)) {
+        if (sharedPreferences.getBoolean(getString(R.string.music_key), false)) {
             mp.start();
         } else {
             if (!mp.isPlaying()) {
@@ -169,7 +152,9 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
-    // TODO: Prüfen ob erweitern für Settingfragment backpressed / Toolbar hinzufügen?
+    /**
+     * Handles the backpressed button. Removes the Fragment when there is someone on the backstack.
+     */
     @Override
     public void onBackPressed() {
         if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
@@ -182,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements
 
     /**
      * Handler for replacing and adding fragments to the backstack.
-     * @param fragment - The fragment which should be shown.
+     * @param fragment The fragment which should be shown.
      */
     private void switchToFragment(Fragment fragment) {
         getSupportFragmentManager().beginTransaction().replace(R.id.container,
@@ -238,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Handler for the Player Stats button. Starts an alert dialog that shows the local player stats.
+     * Handler for the Player Stats button. Starts an alert dialog that shows the local player stats got from the database.
      */
     @Override
     public void onPlayerstatsButtonClicked() {
@@ -287,14 +272,15 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onPlayButtonClicked() {
 
-        sketch = new Sketch();
+        Sketch sketch = new Sketch();
         sketch.setCallback(this);
         pFragment.setSketch(sketch);
+        difficulty = PreferenceManager.getDefaultSharedPreferences(this).getString(getString(R.string.difficulty_key), "easy");
         switchToFragment(pFragment);
     }
 
     /**
-     * Handler for the Achievements button. When successful, the achievements intent is started.
+     * Handler for the Achievements button. When successful, the Google Play Games achievements intent is started.
      */
     public void onShowAchievementsRequested() {
         achievementsClient.getAchievementsIntent()
@@ -313,7 +299,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Handler for the Leaderboards button. When successful, the leaderboards intent is started.
+     * Handler for the Leaderboards button. When successful, the Google Play Games leaderboards intent is started.
      */
 
     public void onShowLeaderboardsRequested() {
@@ -333,15 +319,15 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Checks if a player was signed in in the last session.
-     * @return Boolean if the Player was signed-in.
+     * Checks if a player is signed in in the last session.
+     * @return Boolean if the Player is signed-in.
      */
     private boolean isSignedIn() {
         return GoogleSignIn.getLastSignedInAccount(this) != null;
     }
 
     /**
-     * Methode that tries to automatic sign-in without noticing the user.
+     * Methode that tries to sign-in automatically without noticing the user.
      */
     private void signInSilently() {
         Log.d(TAG, "signedInSilently()");
@@ -361,7 +347,9 @@ public class MainActivity extends AppCompatActivity implements
                 });
     }
 
-    // Todo: vielleicht noch abändern
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void onResume() {
         super.onResume();
@@ -371,9 +359,11 @@ public class MainActivity extends AppCompatActivity implements
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(listener);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         checkMusicAndPlay(prefs);
-       // mp.start();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void onPause() {
         super.onPause();
@@ -398,7 +388,7 @@ public class MainActivity extends AppCompatActivity implements
                     @Override
                     public void onComplete(Task<Void> task) {
                         boolean successful = task.isSuccessful();
-                        Log.d("TAG","signOut(): " + (successful ? "success" : "failed"));
+                        Log.d(TAG,"signOut(): " + (successful ? "success" : "failed"));
                         if (successful) {
                             onDisconnected();
                         }
@@ -419,6 +409,16 @@ public class MainActivity extends AppCompatActivity implements
             leaderboardsClient.submitScore(getString(R.string.leaderboard_easy_id),
             outbox.easyModeScore);
             outbox.easyModeScore = -1;
+        }
+        if (outbox.mediumModeScore >= 0) {
+            leaderboardsClient.submitScore(getString(R.string.leaderboard_medium_id),
+                    outbox.mediumModeScore);
+            outbox.mediumModeScore = -1;
+        }
+        if (outbox.hardModeScore >= 0) {
+            leaderboardsClient.submitScore(getString(R.string.leaderboard_hard_id),
+                    outbox.hardModeScore);
+            outbox.hardModeScore = -1;
         }
         if (outbox.firstPoint) {
             achievementsClient.unlock(getString(R.string.first_point));
@@ -454,22 +454,22 @@ public class MainActivity extends AppCompatActivity implements
      * @param finalScore The final score of the last game.
      */
     private void updateLeaderboard(int finalScore) {
-        if (outbox.easyModeScore < finalScore) {
+        if (difficulty.equals("easy") && outbox.easyModeScore < finalScore) {
             outbox.easyModeScore = finalScore;
         }
-        if (outbox.mediumModeScore < finalScore) {
+        if (difficulty.equals("medium") && outbox.mediumModeScore < finalScore) {
             outbox.mediumModeScore = finalScore;
         }
-        if (outbox.hardModeScore < finalScore) {
+        if (difficulty.equals("hard") && outbox.hardModeScore < finalScore) {
             outbox.hardModeScore = finalScore;
         }
     }
 
     /**
      * Checks if the requirements for achievements were given and updates the outbox.
-     * @param score - The final score of the last game.
-     * @param wallHit - Boolean if a wall was hit.
-     * @param itemsPickedUp - The number of items picked up.
+     * @param score The final score of the last game.
+     * @param wallHit Boolean if a wall was hit.
+     * @param itemsPickedUp The number of items picked up.
      */
     private void checkForAchievements(int score, boolean wallHit, int itemsPickedUp) {
         if (score >= 1) {
@@ -487,12 +487,12 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Handler for take in the stats of the last game and calls methods for updating achievements,
+     * Handler for taking in the stats of the last game and calls the methods for updating achievements,
      * leaderboard, local stats and for pushing them to the Google Cloud.
-     * @param score - The final score of the game.
-     * @param itemsPickedUp - The number of items picked up.
-     * @param fieldsMoved - Number of fields that were covered.
-     * @param wallHit - Boolean if a wall was hit.
+     * @param score The final score of the game.
+     * @param itemsPickedUp The number of items picked up.
+     * @param fieldsMoved Number of fields that were covered.
+     * @param wallHit Boolean if a wall was hit.
      */
     @Override
     public void onEndedGameScore(int score, int itemsPickedUp, int fieldsMoved, boolean wallHit) {
@@ -506,18 +506,16 @@ public class MainActivity extends AppCompatActivity implements
         updateLocalStats(score, itemsPickedUp, fieldsMoved);
     }
 
-    //Todo: int itemsPickedUp, int obstaclesDestroyed einfügen
-
     /**
      * Updates the local stats that are saved in the database.
-     * @param score - The final score of the last game.
-     * @param itemsPickedUp - The number of items picked up.
-     * @param fieldsMoved - Number of fields that were covered.
+     * @param score The final score of the last game.
+     * @param itemsPickedUp The number of items picked up.
+     * @param fieldsMoved Number of fields that were covered.
      */
     public void updateLocalStats(int score, int itemsPickedUp, int fieldsMoved) {
         Stats stats = database.statsDao().getStats();
         if (stats != null) {
-            database.statsDao().updateStats(score > stats.highestScore ? score : stats.highestScore,
+            database.statsDao().updateStats(Math.max(score, stats.highestScore),
                     stats.totalScore + score, ++stats.totalDeaths,
                     stats.totalItemsPickedUp + itemsPickedUp,
                     stats.totalFieldsMoved + fieldsMoved,
@@ -529,6 +527,12 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
+    /**
+     * Handles the result of the activities started for that. Mainly used for handle the Google sign in account got by the login.
+     * @param requestCode The request code which was used starting the activity.
+     * @param resultCode The result code.
+     * @param intent The intent returned by the activity.
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
@@ -560,10 +564,10 @@ public class MainActivity extends AppCompatActivity implements
     /**
      * Handler successful for connection. Sets the different API clients (achievements, leaderboard, player) depending on the signed-in account.
      * Also pushes achievements and leaderboards values.
-     * @param googleSignInAccount - The signed in account of the player
+     * @param googleSignInAccount The signed in account of the player
      */
     private void onConnected(GoogleSignInAccount googleSignInAccount) {
-        Log.d("SNAKE", "onConnected(): connected to Google APIs");
+        Log.d(TAG, "onConnected(): connected to Google APIs");
 
         achievementsClient = Games.getAchievementsClient(this, googleSignInAccount);
         leaderboardsClient = Games.getLeaderboardsClient(this, googleSignInAccount);
@@ -584,6 +588,7 @@ public class MainActivity extends AppCompatActivity implements
                             }
                         } else {
                             Exception e = task.getException();
+                            assert e != null;
                             e.printStackTrace();
                         }
                     }
@@ -600,7 +605,7 @@ public class MainActivity extends AppCompatActivity implements
      * Handler for disconnection. Updates the button visibility and the API clients.
      */
     private void onDisconnected() {
-        Log.d("Snake", "onDisconnected()");
+        Log.d(TAG, "onDisconnected()");
 
         achievementsClient = null;
         leaderboardsClient = null;
@@ -611,7 +616,9 @@ public class MainActivity extends AppCompatActivity implements
         toastShown = false;
     }
 
-
+    /**
+     * Handles the destruction when the app is released.
+     */
     @Override
     protected void onDestroy() {
         mp.release();
@@ -644,8 +651,8 @@ public class MainActivity extends AppCompatActivity implements
          */
         boolean isEmpty() {
             return easyModeScore < 0 && mediumModeScore < 0 && hardModeScore < 0
-                    && firstPoint == false && goodStart == false && longerBetter == false
-                    && wasThereAnything == false && longRun == 0 && unlimitedPower == 0;
+                    && !firstPoint && !goodStart && !longerBetter
+                    && !wasThereAnything && longRun == 0 && unlimitedPower == 0;
         }
     }
 }

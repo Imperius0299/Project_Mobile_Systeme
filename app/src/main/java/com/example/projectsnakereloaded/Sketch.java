@@ -210,6 +210,8 @@ public class Sketch extends PApplet {
         snake = new Snake(w, h);
         obstacleList = new ArrayList<>();
         itemList = new ArrayList<>();
+        snake.resetItemPower();
+        snakeImage = loadImage("snake_block_default.png");
         createFood();
     }
 

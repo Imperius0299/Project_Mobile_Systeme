@@ -39,7 +39,7 @@
 
     <!-- Default List Values-->
     <string name="default_food">apple</string>
-    <string name="default_background">Wall</string>
+    <string name="default_background">wall</string>
     <string name="default_difficulty">easy</string>
 
 </resources>

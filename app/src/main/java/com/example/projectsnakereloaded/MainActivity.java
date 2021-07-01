@@ -248,11 +248,11 @@ public class MainActivity extends AppCompatActivity implements
 
         Stats stats = database.statsDao().getStats();
 
-            String highestScore = stats != null ?  "Highest Score: " + stats.highestScore : "0";
-            String totalScore = stats != null ? "Total Score: " + stats.totalScore : "0";
-            String totalDeaths = stats != null ? "Total Deaths: "  + stats.totalDeaths : "0";
-            String totalFieldsMoved = stats != null ? "Total Fields Moved: " + stats.totalFieldsMoved : "0";
-            String totalItemsPickedUp = stats != null ? "Total Items Picked Up: " + stats.totalItemsPickedUp : "0";
+        String highestScore = "Highest Score: " + (stats != null ? + stats.highestScore : "0");
+        String totalScore = "Total Score: " + (stats != null ? + stats.totalScore : "0");
+        String totalDeaths = "Total Deaths: " + (stats != null ? + stats.totalDeaths : "0");
+        String totalFieldsMoved = "Total Fields Moved: " + (stats != null ? + stats.totalFieldsMoved : "0");
+        String totalItemsPickedUp = "Total Items Picked Up: " + (stats != null ?  + stats.totalItemsPickedUp : "0");
 
 
 

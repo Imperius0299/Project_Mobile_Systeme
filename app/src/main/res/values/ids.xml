@@ -20,5 +20,6 @@
     <!-- Leaderboard IDs-->
 
     <string name="leaderboard_easy_id">CgkI6M3B16geEAIQAQ</string>
+    <string name="leaderboard_medium_id">CgkI6M3B16geEAIQCQ</string>
     <string name="leaderboard_hard_id">CgkI6M3B16geEAIQAg</string>
 </resources>

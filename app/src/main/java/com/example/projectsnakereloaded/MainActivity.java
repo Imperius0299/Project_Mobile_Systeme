@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements
      */
     public void checkMusicAndPlay(SharedPreferences sharedPreferences) {
         SharedPreferences prefs = sharedPreferences;
-        if (prefs.getBoolean("music", true)) {
+        if (prefs.getBoolean(getString(R.string.music_key), true)) {
             mp.start();
         } else {
             if (!mp.isPlaying()) {
@@ -450,12 +450,18 @@ public class MainActivity extends AppCompatActivity implements
 
 
     /**
-     *
-     * @param finalScore
+     * Updates the leaderboard values of the outbox if the new final score is greater than before.
+     * @param finalScore The final score of the last game.
      */
     private void updateLeaderboard(int finalScore) {
         if (outbox.easyModeScore < finalScore) {
             outbox.easyModeScore = finalScore;
+        }
+        if (outbox.mediumModeScore < finalScore) {
+            outbox.mediumModeScore = finalScore;
+        }
+        if (outbox.hardModeScore < finalScore) {
+            outbox.hardModeScore = finalScore;
         }
     }
 
@@ -629,6 +635,7 @@ public class MainActivity extends AppCompatActivity implements
         int unlimitedPower = 0;
 
         int easyModeScore = -1;
+        int mediumModeScore = -1;
         int hardModeScore = -1;
 
         /**
@@ -636,7 +643,7 @@ public class MainActivity extends AppCompatActivity implements
          * @return Boolean if box is empty.
          */
         boolean isEmpty() {
-            return easyModeScore < 0 && hardModeScore < 0
+            return easyModeScore < 0 && mediumModeScore < 0 && hardModeScore < 0
                     && firstPoint == false && goodStart == false && longerBetter == false
                     && wasThereAnything == false && longRun == 0 && unlimitedPower == 0;
         }

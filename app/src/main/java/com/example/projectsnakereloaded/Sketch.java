@@ -1,6 +1,11 @@
 package com.example.projectsnakereloaded;
 
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.util.Log;
 
@@ -33,6 +38,9 @@ public class Sketch extends PApplet {
     private int w;
     private int h;
 
+    private float edgeW;
+    private float edgeH;
+
     private float framecountKey;
     private float framecountDivider;
     private int itemActiveFrameTime;
@@ -48,6 +56,8 @@ public class Sketch extends PApplet {
 
     private int finalScore;
     private boolean wallHit;
+
+    private boolean soundEffectsOn;
 
     interface Callback {
         void onEndedGameScore(int score, int itemsPickedUp, int fieldsMoved, boolean wallHit);
@@ -72,7 +82,14 @@ public class Sketch extends PApplet {
 
     SharedPreferences prefs;
 
-// https://stackoverflow.com/questions/18459122/play-sound-on-button-click-android
+    //Use of Accelerometer adapted by https://android.processing.org/tutorials/sensors/index.html
+    private Context context;
+    private SensorManager sensorManager;
+    private Sensor sensor;
+    private AccelerometerListener listener;
+    private float ax, ay;
+    private boolean accelerometerOn;
+
 
 
     /**
@@ -81,7 +98,7 @@ public class Sketch extends PApplet {
     @Override
     public void settings() {
         fullScreen();
-        size(width, height);
+        //size(width, height);
     }
 
     /**
@@ -100,8 +117,10 @@ public class Sketch extends PApplet {
 
         prefs = PreferenceManager.getDefaultSharedPreferences((MainActivity)getActivity());
         String difficulty = prefs.getString("difficulty_key", "easy");
-        String obst = prefs.getString("list_food_type", "apple");
+        String obst = prefs.getString("food_type_key", "apple");
         String bgImage = prefs.getString("background_key", "wall");
+        accelerometerOn = prefs.getBoolean("accelerometer_key", false);
+        soundEffectsOn = prefs.getBoolean("sound_effects_key", false);
 
         if(obst.equals("peach")){
             foodImage = loadImage("snake_peach.png");
@@ -131,7 +150,7 @@ public class Sketch extends PApplet {
             rez = 60;
         }
 
-
+        System.out.println(displayDensity + ": " + rez);
 
         // Quelle für png https://github.com/rembound/Snake-Game-HTML5
         //String url = "https://raw.githubusercontent.com/rembound/Snake-Game-HTML5/master/snake-graphics.png";
@@ -145,6 +164,12 @@ public class Sketch extends PApplet {
 
         w = floor(width / rez);
         h = floor(height / rez);
+
+        edgeW = width - ((width / rez) - w ) * rez;
+        edgeH = height - ((height / rez) - h) * rez;
+
+        System.out.println(edgeW + ": " + edgeH);
+
         frameRate(10);
 
         Font = createFont("The Impostor.ttf", rez/30);
@@ -176,7 +201,11 @@ public class Sketch extends PApplet {
         textFont(font);
         textAlign(CENTER, CENTER);
 
-
+        context = getActivity();
+        sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        listener = new AccelerometerListener();
+        sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_GAME);
     }
 
     /**
@@ -184,8 +213,10 @@ public class Sketch extends PApplet {
      * @param rawId - the raw id of the mp3 track.
      */
     public void playSound(int rawId) {
-        mp = MediaPlayer.create((MainActivity)getActivity(), rawId);
-        mp.start();
+        if (soundEffectsOn) {
+            mp = MediaPlayer.create((MainActivity)getActivity(), rawId);
+            mp.start();
+        }
     }
 
     /**
@@ -322,6 +353,30 @@ public class Sketch extends PApplet {
         }
     }
 
+    public void accelerometerMoving() {
+        if (ay <= -1){
+            if (snake.getBody().size() > 1 && snake.getDir().y == 1) {
+                return;
+            }
+            snake.setDir(0, -1);
+        } else if (ax >= 1) {
+            if (snake.getBody().size() > 1 && snake.getDir().x == 1) {
+                return;
+            }
+            snake.setDir(-1, 0);
+        } else if (ax <= -1) {
+            if (snake.getBody().size() > 1 && snake.getDir().x == -1) {
+                return;
+            }
+            snake.setDir(1, 0);
+        } else if (ay >= 1) {
+            if (snake.getBody().size() > 1 && snake.getDir().y == -1) {
+                return;
+            }
+            snake.setDir(0, 1);
+        }
+    }
+
     @Override
     public void keyPressed() {
         if (key == CODED && (frameCount > framecountKey)) {
@@ -392,7 +447,6 @@ public class Sketch extends PApplet {
     public void draw() {
         background(197, 167, 225);
 
-
         backgroundImage.resize(width, height);
         image(backgroundImage, 0, 0);
         textAlign(CENTER, CENTER);
@@ -413,14 +467,24 @@ public class Sketch extends PApplet {
         //Todo : delete frameRate
         fill(255,255,255);
         text("Score: "+snake.getLen() + ": " + frameRate, scoreCoordinateX, scoreCoordinateY);
-
+        text("X: " + ax + "\nY: " + ay,width / 2, height / 2);
+        //line(edgeW,0, edgeW, edgeH);
+        //fill(0,0,0, 50);
+        tint(100);
+        image(backgroundImage, edgeW, 0, edgeW, height);
+        image(backgroundImage, 0, edgeH, width, edgeH);
+        tint(255);
+        //rect(edgeW, 0, edgeW, edgeH);
+        //line(0, edgeH, edgeW, edgeH);
+        //rect(0, edgeH, edgeW, edgeH);
 
         scale(rez);
 
-
-        //Todo: Testen wegen slow Down Speed Up
-        //createFood();
         if (!gameover) {
+
+            if (accelerometerOn) {
+                accelerometerMoving();
+            }
 
             if (frameCount % framecountDivider == 0) {
                 if (snake.eat(food)) {
@@ -505,7 +569,6 @@ public class Sketch extends PApplet {
                 }
 
                 food.show(this);
-                //image(foodImage,food.x, food.y, 1, 1);
 
                 if (frameCount % framecountDivider == 0){
                     endGame();
@@ -572,6 +635,20 @@ public class Sketch extends PApplet {
             if (snakeHead.x == snakeBody.get(i).x && snakeHead.y == snakeBody.get(i).y){
                 gameover = true;
             }
+        }
+    }
+
+    class AccelerometerListener implements SensorEventListener {
+
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            ax = event.values[0];
+            ay = event.values[1];
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
         }
     }
 }

@@ -15,3 +15,7 @@ Inspiration and Src Adaption for Google API Implementation by
 
 ##Graphic Design inspired by
 [Minecraft](https://www.minecraft.net/de-de) developed by Mojang Studios
+
+##Installation Hint:
+###Don't forget to add processing core library from libs folder.
+

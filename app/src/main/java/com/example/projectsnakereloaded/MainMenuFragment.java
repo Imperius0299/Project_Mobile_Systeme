@@ -14,12 +14,15 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 /**
- * Represents the Main Menu of the Game
+ * Fragment that represents the main menu of the game.
+ * @author Alexander Storbeck
+ * @author Luca Jetter
+ * @author Bruno Oliveira (Google) - Named because of the Adaptation of Methods used in the Google API sample project (https://github.com/playgameservices/android-basic-samples)
  */
 public class MainMenuFragment extends Fragment implements View.OnClickListener {
 
     /**
-     * The Interface for listening to the Button clicks.
+     * The interface for listening to the button clicks.
      */
     interface Listener {
         void onShowAchievementsRequested();
@@ -41,7 +44,11 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
     private ImageButton buttonAchievements;
     private ImageButton buttonLeaderboard;
 
-    
+    private boolean buttonsShow;
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -62,14 +69,22 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
 
         buttonAchievements = view.findViewById(R.id.buttonAchievements);
         buttonLeaderboard = view.findViewById(R.id.buttonLeaderboard);
-
+        updateButtons(buttonsShow);
         return view;
     }
 
+    /**
+     * Sets the listener for the main menu.
+     * @param listener
+     */
     public void setListener(Listener listener) {
         this.listener = listener;
     }
 
+    /**
+     * Sets the onclick methods for the different buttons in dependency of the listener.
+     * @param v The view which is clicked.
+     */
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -94,15 +109,20 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-    //Todo : fixen wenn von fragmet zurück
+    /**
+     * Updates the Buttons visibility and onclick state.
+     * @param isSignedIn A Boolean if a User is signed-in.
+     */
     public void updateButtons(boolean isSignedIn) {
         if (!isSignedIn) {
+            buttonsShow = false;
             buttonAchievements.setEnabled(false);
             buttonLeaderboard.setEnabled(false);
 
             buttonAchievements.getDrawable().setColorFilter(Color.argb(155, 211,211,211), PorterDuff.Mode.SRC_ATOP);
             buttonLeaderboard.getDrawable().setColorFilter(Color.argb(155, 211,211,211), PorterDuff.Mode.SRC_ATOP);
         } else {
+            buttonsShow = true;
             buttonAchievements.setEnabled(true);
             buttonLeaderboard.setEnabled(true);
             buttonAchievements.getDrawable().setColorFilter(null);

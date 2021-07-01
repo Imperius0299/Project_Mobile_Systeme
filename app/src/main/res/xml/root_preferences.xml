@@ -4,34 +4,40 @@
     <PreferenceCategory app:title="@string/game_header">
 
         <ListPreference
-            android:defaultValue="1"
+            android:defaultValue="@string/default_food"
             android:entries="@array/food_entries"
             android:entryValues="@array/food_values"
-            android:key="list_food_type"
+            android:key="@string/food_type_key"
             android:title="@string/food_type" />
         <ListPreference
-            android:defaultValue="1"
+            android:defaultValue="@string/default_background"
             android:entries="@array/background_entries"
             android:entryValues="@array/background_values"
-            android:key="background_key"
-            android:title="Change background design" />
+            android:key="@string/background_key"
+            android:title="@string/background_type" />
         <ListPreference
-            android:defaultValue="1"
+            android:defaultValue="@string/default_difficulty"
             android:entries="@array/difficulty_entries"
             android:entryValues="@array/difficulty_values"
-            android:key="difficulty_key"
-            android:title="Change difficulty" />
+            android:key="@string/difficulty_key"
+            android:title="@string/difficulty_type" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="@string/accelerometer_key"
+            android:summaryOff="@string/accelerometer_off"
+            android:summaryOn="@string/accelerometer_on"
+            android:title="@string/accelerometer" />
 
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/general_header">
 
         <SwitchPreferenceCompat
-            app:key="music"
+            app:key="@string/music_key"
             app:title="@string/music_title" />
 
         <SwitchPreferenceCompat
-            app:key="sound_effects"
+            app:key="@string/sound_effects_key"
             app:title="@string/effects_title" />
 
     </PreferenceCategory>

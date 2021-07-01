@@ -13,28 +13,13 @@
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
-    <style name="MyTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
-        <item name="android:background">@color/pale_blue</item>
-        <item name="android:textColor">@color/black</item>
-        <item name="android:color">@color/black</item>
-        <item name="android:fontFamily">@font/upheavtt</item>
-        <item name="android:textSize">25sp</item>
-        <item name="android:buttonBarNegativeButtonStyle">@style/NeutralButtonStyle</item>
-        <item name="android:buttonBarPositiveButtonStyle">@style/NeutralButtonStyle</item>
-        <item name="android:buttonBarNeutralButtonStyle">@style/NeutralButtonStyle</item>
-    </style>
     <style name="AlertDialogTheme" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
-        <item name="buttonBarNeutralButtonStyle">@style/NeutralButtonStyle</item>
-        <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
+        <item name="buttonBarNeutralButtonStyle">@style/AlertButtonStyle</item>
+        <item name="buttonBarPositiveButtonStyle">@style/AlertButtonStyle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/AlertButtonStyle</item>
+        <item name="android:background">@color/pale_blue</item>
     </style>
-
-    <style name="NeutralButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
-        <item name="android:textColor">@color/black</item>
-        <item name="android:textSize">25sp</item>
-        <item name="android:fontFamily">@font/upheavtt</item>
-    </style>
-
-    <style name="PositiveButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+    <style name="AlertButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
         <item name="android:textColor">@color/black</item>
         <item name="android:textSize">25sp</item>
         <item name="android:fontFamily">@font/upheavtt</item>

@@ -4,7 +4,7 @@ import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-/** Represents the stats for the played Games.
+/** Represents the stats for the played games.
  * @author Alexander Storbeck
  */
 @Entity(tableName = "stats",
@@ -23,10 +23,10 @@ public class Stats {
     public int totalItemsPickedUp;
 
     /**
-     * Creates the Stats with the specific values.
+     * Creates the stats with the specific values.
      * @param highestScore The highest score that was reached over all games.
      * @param totalScore The sum of all reached scores.
-     * @param totalDeaths The sum of the total player's deaths.
+     * @param totalDeaths The sum of the total death of the player.
      */
     public Stats(int highestScore, int totalScore, int totalDeaths, int totalItemsPickedUp, int totalFieldsMoved) {
         this.highestScore = highestScore;

@@ -3,32 +3,30 @@ package com.example.projectsnakereloaded;
 import processing.core.PImage;
 
 /**
- * Represents the Speed Boost Item in the Sketch.
+ * Represents the speed boost item in the sketch.
  * @author Alexander Storbeck
+ * @author Luca Jetter
  */
 public class SpeedBoost extends Item{
 
     private double speedBoost;
 
     /**
-     * Creates a Speed Boost Item at a specific position.
+     * Creates a speed boost item at a specific position.
      * @param x The horizontal coordinate.
      * @param y The vertical coordinate.
-     * @param image The image that represents the Item.
+     * @param image The image that represents the item.
      */
     public SpeedBoost(int x, int y, PImage image) {
         super(x, y, image);
         speedBoost = -1;
     }
     /**
-     * Get's the speed Boost provided by the item for further acceleration.
-     * @return A int representing the Speed Loss value.
+     * Gets the speed boost provided by the item for further acceleration.
+     * @return An int holding the speed loss value.
      */
     public double getSpeedBoost() {
         return speedBoost;
     }
 
-    public void setSpeedBoost(double speedBoost) {
-        this.speedBoost = speedBoost;
-    }
 }

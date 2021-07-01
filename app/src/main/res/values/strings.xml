@@ -19,15 +19,27 @@
 
     <!-- Game Preferences -->
     <string name="food_type">Choose your preferred Food Type</string>
+    <string name="background_type">Change background design</string>
+    <string name="difficulty_type">Change difficulty</string>
+    <string name="accelerometer">Accelerometer</string>
 
-    <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
+    <string name="accelerometer_on">Accelerometer Control is activated</string>
+    <string name="accelerometer_off">Accelerometer Control is deactivated</string>
 
-    <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <!-- General Preferences Keys -->
+    <string name="music_key">music_key</string>
+    <string name="sound_effects_key">sound_effects_key</string>
+
+    <!-- Game Preferences Keys -->
+
+    <string name="food_type_key">food_type_key</string>
+    <string name="background_key">background_key</string>
+    <string name="difficulty_key">difficulty_key</string>
+    <string name="accelerometer_key">accelerometer_key</string>
+
+    <!-- Default List Values-->
+    <string name="default_food">apple</string>
+    <string name="default_background">Wall</string>
+    <string name="default_difficulty">easy</string>
+
 </resources>

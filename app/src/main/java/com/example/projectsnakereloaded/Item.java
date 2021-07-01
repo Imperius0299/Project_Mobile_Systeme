@@ -5,8 +5,9 @@ import processing.core.PImage;
 import processing.core.PVector;
 
 /**
- * Represents the Parent Item for the specific items.
+ * Represents the parent item for the specific items. Specific Items were created in the purpose of being expandable in the future.
  * @author Alexander Storbeck
+ * @author Luca Jetter
  */
 public class Item {
 
@@ -15,10 +16,10 @@ public class Item {
     private PImage image;
 
     /**
-     * Creates a Item at a specific position. Parent Class for Specific Items.
+     * Creates an item at a specific position. Parent class for specific items.
      * @param x The horizontal coordinate.
      * @param y The vertical coordinate.
-     * @param image The image that represents the Item.
+     * @param image The image that represents the item.
      */
     public Item(int x, int y, PImage image) {
         this.x = x;
@@ -26,10 +27,9 @@ public class Item {
         this.image = image;
     }
 
-    //Todo: PImage einfügen
 
     /**
-     * Shows the Item tile with the proposed image.
+     * Shows the item tile with the proposed image.
      * @param pApplet The sketch where to show the image.
      */
     public void show(PApplet pApplet) {
@@ -37,8 +37,8 @@ public class Item {
     }
 
     /**
-     * Get's the position of the item.
-     * @return A PVector holding the Position coordinates.
+     * Gets the position of the item.
+     * @return A PVector holding the position coordinates.
      */
     public PVector getPos() {
         return new PVector(x, y);

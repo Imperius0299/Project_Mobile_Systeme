@@ -36,12 +36,13 @@ import com.google.android.gms.tasks.Task;
 
 import processing.android.PFragment;
 
-/* Menu Sound by
-Superepic by Alexander Nakarada | https://www.serpentsoundstudios.com
-        Music promoted by https://www.chosic.com
-        Attribution 4.0 International (CC BY 4.0)
-        https://creativecommons.org/licenses/by/4.0/
-*/
+/**
+ * Represents the Main Activity with the overall logic for Google Play API and
+ * button handler. Also loads the different fragments.
+ * @author Alexander Storbeck
+ * @author Luca Jetter
+ * @author Bruno Oliveira (Google) - Named because of the Adaptation of Methods used in the Google API sample project(https://github.com/playgameservices/android-basic-samples)
+ */
 public class MainActivity extends AppCompatActivity implements
         Sketch.Callback,
         MainMenuFragment.Listener{
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private String displayName;
 
-    private Sketch sketch;
+    private boolean toastShown;
 
     private MediaPlayer mp;
 
@@ -65,6 +66,8 @@ public class MainActivity extends AppCompatActivity implements
     private SettingsFragment settingsFragment;
 
     private  SharedPreferences.OnSharedPreferenceChangeListener listener;
+
+    private String difficulty;
 
     private static final int RC_UNUSED = 5001;
     private static final int RC_SIGN_IN = 9001;
@@ -77,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements
 
 
     //Window Fullscreen https://www.tutorialspoint.com/how-to-get-full-screen-activity-in-android
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -114,46 +118,30 @@ public class MainActivity extends AppCompatActivity implements
         mp = MediaPlayer.create(this, R.raw.loyalty_freak_music_everyone_is_so_alive);
         mp.setLooping(true);
 
+        //Inspiration für Shared preferences listener durch https://stackoverflow.com/a/33509405
 
         listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-                if (key.equals("music")) {
+                if (key.equals(getString(R.string.music_key))) {
                     checkMusicAndPlay(sharedPreferences);
                 }
             }
         };
 
+
         getSupportFragmentManager().beginTransaction().add(R.id.container,
                 mainMenuFragment).commit();
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (sketch != null) {
-            sketch.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        if (sketch != null) {
-            sketch.onNewIntent(intent);
-        }
-    }
-
-
     //Todo: Problem wenn Musik ausgeschaltet wird fixen
 
     /**
-     * Checks the music setting and play or pause Music depending on the switch.
+     * Checks the music setting and plays or pauses music depending on the switch preference.
      * @param sharedPreferences An instance of the shared preferences.
      */
     public void checkMusicAndPlay(SharedPreferences sharedPreferences) {
-        SharedPreferences prefs = sharedPreferences;
-        if (prefs.getBoolean("music", true)) {
+        if (sharedPreferences.getBoolean(getString(R.string.music_key), false)) {
             mp.start();
         } else {
             if (!mp.isPlaying()) {
@@ -164,18 +152,21 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
-    // TODO: Prüfen ob erweitern für Settingfragment backpressed / Toolbar hinzufügen?
+    /**
+     * Handles the backpressed button. Removes the Fragment when there is someone on the backstack.
+     */
     @Override
     public void onBackPressed() {
         if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
             getSupportFragmentManager().popBackStack();
+            mainMenuFragment.updateButtons(isSignedIn());
         } else {
             super.onBackPressed();
         }
     }
 
     /**
-     * Handler for replace and add Fragment to the Backstack.
+     * Handler for replacing and adding fragments to the backstack.
      * @param fragment The fragment which should be shown.
      */
     private void switchToFragment(Fragment fragment) {
@@ -184,62 +175,47 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Handler for the Play Games Button. Starts alert dialog to start sign-in intent or for signing out.
+     * Handler for the Google Play Games button. Starts an alert dialog to start sign-in intent or for signing out.
      */
     @Override
     public void onPlayGamesButtonClicked() {
-        if(displayName == null) {
             LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
             View promptView = layoutInflater.inflate(R.layout.prompt, null);
+            TextView googleloginstatus = (TextView) promptView.findViewById(R.id.googleloginstatus);
             AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this, R.style.AlertDialogTheme);
             alertdialog.setView(promptView);
             alertdialog.setCancelable(false)
-                    .setPositiveButton("Sign In", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            startActivityForResult(signInClient.getSignInIntent(), RC_SIGN_IN);
-                        }
-                    })
                     .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             // do nothing
                         }
                     });
+                    if (displayName == null) {
+                        alertdialog.setPositiveButton("Sign In", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                startActivityForResult(signInClient.getSignInIntent(), RC_SIGN_IN);
+                            }
+                        });
+                        googleloginstatus.setText("You are not signed in.");
+                    } else {
+                        alertdialog.setPositiveButton("Sign Out", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                signOut();
+                                displayName = null;
+                                Toast.makeText(MainActivity.this, "Successfully signed out", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                        googleloginstatus.setText("You are signed in as " + displayName + ".");
+                    }
             alertdialog.create();
-            TextView googleloginstatus = (TextView) promptView.findViewById(R.id.googleloginstatus);
-            googleloginstatus.setText("You are not signed in.");
             alertdialog.show();
-        }
-        else {
-            LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
-            View promptView = layoutInflater.inflate(R.layout.prompt, null);
-            AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this, R.style.AlertDialogTheme);
-            alertdialog.setView(promptView);
-            alertdialog.setCancelable(false)
-                    .setPositiveButton("Sign Out", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            signOut();
-                            displayName = null;
-                            Toast.makeText(MainActivity.this, "Successfully signed out", Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            // do nothing
-                        }
-                    });
-            alertdialog.create();
-            TextView googleloginstatus = (TextView) promptView.findViewById(R.id.googleloginstatus);
-            googleloginstatus.setText("You are signed in as " + displayName + ".");
-            alertdialog.show();
-        }
     }
 
     /**
-     * Handler for the Settings Button. Switches to the Settings Fragment.
+     * Handler for the settings button. Switches to the settings fragment.
      */
     @Override
     public void onSettingsButtonClicked() {
@@ -247,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Handler for the Player Stats Button. Starts a alert dialog that shows the local player stats.
+     * Handler for the Player Stats button. Starts an alert dialog that shows the local player stats got from the database.
      */
     @Override
     public void onPlayerstatsButtonClicked() {
@@ -271,11 +247,14 @@ public class MainActivity extends AppCompatActivity implements
         TextView totalItemsPickedUpTextView = (TextView) playerstatsView.findViewById(R.id.totalItemsPickedUp);
 
         Stats stats = database.statsDao().getStats();
-        String highestScore = "Highest Score: " + stats.highestScore;
-        String totalScore = "Total Score: " + stats.totalScore ;
-        String totalDeaths = "Total Deaths: "  + stats.totalDeaths;
-        String totalFieldsMoved = "Total Fields Moved: " + stats.totalFieldsMoved;
-        String totalItemsPickedUp = "Total Items Picked Up: " + stats.totalItemsPickedUp;
+
+            String highestScore = stats != null ?  "Highest Score: " + stats.highestScore : "0";
+            String totalScore = stats != null ? "Total Score: " + stats.totalScore : "0";
+            String totalDeaths = stats != null ? "Total Deaths: "  + stats.totalDeaths : "0";
+            String totalFieldsMoved = stats != null ? "Total Fields Moved: " + stats.totalFieldsMoved : "0";
+            String totalItemsPickedUp = stats != null ? "Total Items Picked Up: " + stats.totalItemsPickedUp : "0";
+
+
 
         highestScoreTextView.setText(highestScore);
         totalScoreTextView.setText(totalScore);
@@ -288,19 +267,20 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Handler for the Play Button. Initialize a Sketch and switches to the PFragment.
+     * Handler for the Play Button. Initializes a sketch and switches to the PFragment.
      */
     @Override
     public void onPlayButtonClicked() {
 
-        sketch = new Sketch();
+        Sketch sketch = new Sketch();
         sketch.setCallback(this);
         pFragment.setSketch(sketch);
+        difficulty = PreferenceManager.getDefaultSharedPreferences(this).getString(getString(R.string.difficulty_key), "easy");
         switchToFragment(pFragment);
     }
 
     /**
-     * Handler for the Achievements Button. When successful the Achievements intent is started.
+     * Handler for the Achievements button. When successful, the Google Play Games achievements intent is started.
      */
     public void onShowAchievementsRequested() {
         achievementsClient.getAchievementsIntent()
@@ -319,7 +299,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Handler for the Leaderboards Button. When successful the Leaderboards intent is started.
+     * Handler for the Leaderboards button. When successful, the Google Play Games leaderboards intent is started.
      */
 
     public void onShowLeaderboardsRequested() {
@@ -339,15 +319,15 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Checks if a Player was signed in in the last session.
-     * @return Boolean if the Player was signed-in.
+     * Checks if a player is signed in in the last session.
+     * @return Boolean if the Player is signed-in.
      */
     private boolean isSignedIn() {
         return GoogleSignIn.getLastSignedInAccount(this) != null;
     }
 
     /**
-     * Methode that tries to automatic sign-in without noticing the User.
+     * Methode that tries to sign-in automatically without noticing the user.
      */
     private void signInSilently() {
         Log.d(TAG, "signedInSilently()");
@@ -367,7 +347,9 @@ public class MainActivity extends AppCompatActivity implements
                 });
     }
 
-    // Todo: vielleicht noch abändern
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void onResume() {
         super.onResume();
@@ -377,18 +359,23 @@ public class MainActivity extends AppCompatActivity implements
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(listener);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         checkMusicAndPlay(prefs);
-       // mp.start();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void onPause() {
         super.onPause();
         PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(listener);
+        if (!mp.isPlaying()) {
+            return;
+        }
         mp.pause();
     }
 
     /**
-     * Signs out the active signed-in Account.
+     * Signs out the active signed-in account.
      */
     private void signOut() {
 
@@ -401,7 +388,7 @@ public class MainActivity extends AppCompatActivity implements
                     @Override
                     public void onComplete(Task<Void> task) {
                         boolean successful = task.isSuccessful();
-                        Log.d("TAG","signOut(): " + (successful ? "success" : "failed"));
+                        Log.d(TAG,"signOut(): " + (successful ? "success" : "failed"));
                         if (successful) {
                             onDisconnected();
                         }
@@ -411,7 +398,7 @@ public class MainActivity extends AppCompatActivity implements
 
 
     /**
-     * Pushes the values that are locally saved in the Accomplishment outbox to Google Play.
+     * Pushes the values that are locally saved in the accomplishment outbox to Google Play.
      */
     public void pushAccomplishments() {
         if (!isSignedIn()) {
@@ -422,6 +409,16 @@ public class MainActivity extends AppCompatActivity implements
             leaderboardsClient.submitScore(getString(R.string.leaderboard_easy_id),
             outbox.easyModeScore);
             outbox.easyModeScore = -1;
+        }
+        if (outbox.mediumModeScore >= 0) {
+            leaderboardsClient.submitScore(getString(R.string.leaderboard_medium_id),
+                    outbox.mediumModeScore);
+            outbox.mediumModeScore = -1;
+        }
+        if (outbox.hardModeScore >= 0) {
+            leaderboardsClient.submitScore(getString(R.string.leaderboard_hard_id),
+                    outbox.hardModeScore);
+            outbox.hardModeScore = -1;
         }
         if (outbox.firstPoint) {
             achievementsClient.unlock(getString(R.string.first_point));
@@ -453,12 +450,18 @@ public class MainActivity extends AppCompatActivity implements
 
 
     /**
-     *
-     * @param finalScore
+     * Updates the leaderboard values of the outbox if the new final score is greater than before.
+     * @param finalScore The final score of the last game.
      */
     private void updateLeaderboard(int finalScore) {
-        if (outbox.easyModeScore < finalScore) {
+        if (difficulty.equals("easy") && outbox.easyModeScore < finalScore) {
             outbox.easyModeScore = finalScore;
+        }
+        if (difficulty.equals("medium") && outbox.mediumModeScore < finalScore) {
+            outbox.mediumModeScore = finalScore;
+        }
+        if (difficulty.equals("hard") && outbox.hardModeScore < finalScore) {
+            outbox.hardModeScore = finalScore;
         }
     }
 
@@ -484,8 +487,8 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Handler for take in the Stats of the ended Game and call Methods for updating Achievements,
-     * Leaderboard, Local Stats and for pushing them to the google Cloud.
+     * Handler for taking in the stats of the last game and calls the methods for updating achievements,
+     * leaderboard, local stats and for pushing them to the Google Cloud.
      * @param score The final score of the game.
      * @param itemsPickedUp The number of items picked up.
      * @param fieldsMoved Number of fields that were covered.
@@ -503,10 +506,8 @@ public class MainActivity extends AppCompatActivity implements
         updateLocalStats(score, itemsPickedUp, fieldsMoved);
     }
 
-    //Todo: int itemsPickedUp, int obstaclesDestroyed einfügen
-
     /**
-     * Updates the Local stats that are saved in the database.
+     * Updates the local stats that are saved in the database.
      * @param score The final score of the last game.
      * @param itemsPickedUp The number of items picked up.
      * @param fieldsMoved Number of fields that were covered.
@@ -514,7 +515,7 @@ public class MainActivity extends AppCompatActivity implements
     public void updateLocalStats(int score, int itemsPickedUp, int fieldsMoved) {
         Stats stats = database.statsDao().getStats();
         if (stats != null) {
-            database.statsDao().updateStats(score > stats.highestScore ? score : stats.highestScore,
+            database.statsDao().updateStats(Math.max(score, stats.highestScore),
                     stats.totalScore + score, ++stats.totalDeaths,
                     stats.totalItemsPickedUp + itemsPickedUp,
                     stats.totalFieldsMoved + fieldsMoved,
@@ -526,6 +527,12 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
+    /**
+     * Handles the result of the activities started for that. Mainly used for handle the Google sign in account got by the login.
+     * @param requestCode The request code which was used starting the activity.
+     * @param resultCode The result code.
+     * @param intent The intent returned by the activity.
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
@@ -555,12 +562,12 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Handler successful for connection. Sets the different Api clients (Achievements, Leaderboard, Player) depending on the signed in Account.
-     * Also pushes Achievements and Leaderboard's values.
-     * @param googleSignInAccount The signed in Account of the player
+     * Handler successful for connection. Sets the different API clients (achievements, leaderboard, player) depending on the signed-in account.
+     * Also pushes achievements and leaderboards values.
+     * @param googleSignInAccount The signed in account of the player
      */
     private void onConnected(GoogleSignInAccount googleSignInAccount) {
-        Log.d("SNAKE", "onConnected(): connected to Google APIs");
+        Log.d(TAG, "onConnected(): connected to Google APIs");
 
         achievementsClient = Games.getAchievementsClient(this, googleSignInAccount);
         leaderboardsClient = Games.getLeaderboardsClient(this, googleSignInAccount);
@@ -574,36 +581,44 @@ public class MainActivity extends AppCompatActivity implements
                     public void onComplete(Task<Player> task) {
                         if (task.isSuccessful()) {
                             displayName = task.getResult().getDisplayName();
-                            String welcomeText = "Welcome:" + displayName;
-                            Toast.makeText(getApplicationContext(), welcomeText, Toast.LENGTH_LONG).show();
+                            if (!toastShown) {
+                                String welcomeText = "Welcome:" + displayName;
+                                Toast.makeText(getApplicationContext(), welcomeText, Toast.LENGTH_LONG).show();
+                                toastShown = true;
+                            }
                         } else {
                             Exception e = task.getException();
-                            displayName = "???";
+                            assert e != null;
+                            e.printStackTrace();
                         }
                     }
                 });
 
         if (!outbox.isEmpty()) {
             pushAccomplishments();
-            Toast.makeText(this, "Your progress will be uploades", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Your progress will be uploaded", Toast.LENGTH_LONG).show();
         }
 
     }
 
     /**
-     * Handler for disconnection. Updates the Button visibility and the Api Clients.
+     * Handler for disconnection. Updates the button visibility and the API clients.
      */
     private void onDisconnected() {
-        Log.d("Snake", "onDisconnected()");
+        Log.d(TAG, "onDisconnected()");
 
         achievementsClient = null;
         leaderboardsClient = null;
         playersClient = null;
 
         mainMenuFragment.updateButtons(false);
+
+        toastShown = false;
     }
 
-
+    /**
+     * Handles the destruction when the app is released.
+     */
     @Override
     protected void onDestroy() {
         mp.release();
@@ -613,8 +628,8 @@ public class MainActivity extends AppCompatActivity implements
 
 
     /**
-     * Represents the Accomplishment Outbox that saves the gathered Achievements and Score locally,
-     * so that it can be pushed later. It is also for preventing a lost of the Accomplishments when
+     * Represents the accomplishment outbox that saves the gathered achievements and score locally,
+     * so that it can be pushed later. It is also for preventing a loss of the accomplishments when
      * the connection is lost during a session.
      */
     private class AccomplishmentsOutbox {
@@ -627,16 +642,17 @@ public class MainActivity extends AppCompatActivity implements
         int unlimitedPower = 0;
 
         int easyModeScore = -1;
+        int mediumModeScore = -1;
         int hardModeScore = -1;
 
         /**
-         * Checks if the AccomplishmentsOutbox is empty, so no Accomplishments were gathered during the last push.
+         * Checks if the accomplishments outbox is empty, so no accomplishments were gathered during the last push.
          * @return Boolean if box is empty.
          */
         boolean isEmpty() {
-            return easyModeScore < 0 && hardModeScore < 0
-                    && firstPoint == false && goodStart == false && longerBetter == false
-                    && wasThereAnything == false && longRun == 0 && unlimitedPower == 0;
+            return easyModeScore < 0 && mediumModeScore < 0 && hardModeScore < 0
+                    && !firstPoint && !goodStart && !longerBetter
+                    && !wasThereAnything && longRun == 0 && unlimitedPower == 0;
         }
     }
 }

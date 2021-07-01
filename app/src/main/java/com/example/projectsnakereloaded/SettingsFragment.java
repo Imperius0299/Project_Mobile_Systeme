@@ -7,24 +7,19 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.preference.PreferenceFragmentCompat;
 
 /**
- * Represents the settings of the game.
+ * Fragment that represents the settings of the game.
+ * @author Alexander Storbeck
+ * @author Luca Jetter
  */
 public class SettingsFragment extends PreferenceFragmentCompat {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey);
 
-        /*
-        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                getActivity().getSupportFragmentManager().popBackStack();
-            }
-        };
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
-
-         */
     }
 
 

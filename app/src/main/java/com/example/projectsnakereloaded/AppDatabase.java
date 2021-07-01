@@ -8,6 +8,7 @@ import androidx.room.RoomDatabase;
 
 /**
  * Represents the local database of the App.
+ * @author Alexander Storbeck
  */
 @Database(entities = {Stats.class}, version = 7, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
@@ -17,9 +18,9 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract StatsDao statsDao();
 
     /**
-     * Get's the actual Instance of the Database when
-     * @param context
-     * @return
+     * Builds the actual Instance of the Database.
+     * @param context The context of the application.
+     * @return The Database Instance.
      */
     public static AppDatabase getDatabase(Context context) {
         if (INSTANCE == null) {
@@ -31,6 +32,9 @@ public abstract class AppDatabase extends RoomDatabase {
         return INSTANCE;
     }
 
+    /**
+     * Destroys the actual database instance.
+     */
     public static void destroyInstance() {
         INSTANCE = null;
     }

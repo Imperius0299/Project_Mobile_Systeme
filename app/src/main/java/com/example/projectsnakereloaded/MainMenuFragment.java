@@ -14,7 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 /**
- * Represents the main menu of the game
+ * Fragment that represents the main menu of the game.
  */
 public class MainMenuFragment extends Fragment implements View.OnClickListener {
 
@@ -71,7 +71,7 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
     }
 
     /**
-     * Set's the listener for the main menu.
+     * Sets the listener for the main menu.
      * @param listener
      */
     public void setListener(Listener listener) {
@@ -79,7 +79,7 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
     }
 
     /**
-     * Set's the onclick methods for the different buttons in dependency of the listener.
+     * Sets the onclick methods for the different buttons in dependency of the listener.
      * @param v The view which is clicked.
      */
     @Override
@@ -109,7 +109,7 @@ public class MainMenuFragment extends Fragment implements View.OnClickListener {
     //Todo : fixen wenn von fragmet zurück
 
     /**
-     * Updates the Buttons visibility and and onclick state.
+     * Updates the Buttons visibility and onclick state.
      * @param isSignedIn A Boolean if a User is signed-in.
      */
     public void updateButtons(boolean isSignedIn) {

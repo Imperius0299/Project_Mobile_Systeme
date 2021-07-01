@@ -5,8 +5,9 @@ import processing.core.PImage;
 import processing.core.PVector;
 
 /**
- * Represents the parent item for the specific items.
+ * Represents the parent item for the specific items. Specific Items were created in the purpose of being expandable in the future.
  * @author Alexander Storbeck
+ * @author Luca Jetter
  */
 public class Item {
 

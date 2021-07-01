@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Application ID-->
+    <string name="app_id">1041713096424</string>
+
+    <!-- Achievements IDs-->
+
+    <string name="first_point">CgkI6M3B16geEAIQAw</string>
+    <string name="good_start">CgkI6M3B16geEAIQBA</string>
+    <string name="longer_better">CgkI6M3B16geEAIQBQ</string>
+    <string name="long_run">CgkI6M3B16geEAIQBg</string>
+    <string name="unlimited_power">CgkI6M3B16geEAIQBw</string>
+    <string name="wall_hit">CgkI6M3B16geEAIQCA</string>
+
+    <!-- Leaderboard IDs-->
+
+    <string name="leaderboard_easy_id">CgkI6M3B16geEAIQAQ</string>
+    <string name="leaderboard_medium_id">CgkI6M3B16geEAIQCQ</string>
+    <string name="leaderboard_hard_id">CgkI6M3B16geEAIQAg</string>
+</resources>

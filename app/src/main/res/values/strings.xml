@@ -1,0 +1,45 @@
+<resources>
+    <string name="app_name">Project Snake Reloaded</string>
+
+    <string name="buttonPlay">Play</string>
+    <string name="buttonGoogle">Google Sign-In</string>
+    <string name="buttonGoogleSignOut">Google Sign-Out</string>
+
+    <string name="signInError">There was an Error on Sign in. Please try again later.</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+
+    <!-- Preference Titles -->
+    <string name="game_header">Game</string>
+    <string name="general_header">General</string>
+
+    <!-- General Preferences -->
+    <string name="music_title">Do you want music</string>
+    <string name="effects_title">Do you want effects sound</string>
+    <string name="music_volume">Volume Settings</string>
+
+    <!-- Game Preferences -->
+    <string name="food_type">Choose your preferred Food Type</string>
+    <string name="background_type">Change background design</string>
+    <string name="difficulty_type">Change difficulty</string>
+    <string name="accelerometer">Accelerometer</string>
+
+    <string name="accelerometer_on">Accelerometer Control is activated</string>
+    <string name="accelerometer_off">Accelerometer Control is deactivated</string>
+
+    <!-- General Preferences Keys -->
+    <string name="music_key">music_key</string>
+    <string name="sound_effects_key">sound_effects_key</string>
+
+    <!-- Game Preferences Keys -->
+
+    <string name="food_type_key">food_type_key</string>
+    <string name="background_key">background_key</string>
+    <string name="difficulty_key">difficulty_key</string>
+    <string name="accelerometer_key">accelerometer_key</string>
+
+    <!-- Default List Values-->
+    <string name="default_food">apple</string>
+    <string name="default_background">Wall</string>
+    <string name="default_difficulty">easy</string>
+
+</resources>
